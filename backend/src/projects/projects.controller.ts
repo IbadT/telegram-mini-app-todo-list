@@ -36,6 +36,9 @@ export class ProjectsController {
   findAll(@Req() req: Request) {
     // TODO: Replace with actual user ID from auth
 
+    const isValid = req.headers['tg-web-app-data']
+    console.log({isValid});
+
     const userId = 1;
     return this.projectsService.findAll(userId);
   }

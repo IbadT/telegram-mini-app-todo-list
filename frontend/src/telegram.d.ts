@@ -15,6 +15,9 @@ declare global {
           };
           showAlert: (message: string, callback?: () => void) => void;
           ready: () => void;
+          expand: () => void;
+          setBackgroundColor: (color: string) => void;
+          enableClosingConfirmation: () => void;
           version: string;
           // Добавьте другие методы, которые используете
         };

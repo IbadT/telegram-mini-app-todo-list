@@ -11,10 +11,22 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: true, // Allow all origins in development
+    origin: [
+      'https://*.telegram.org',
+      'http://localhost:5173', // For local development
+      'http://localhost:3000', // For local development
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'tg-init-data'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'tg-init-data',
+      'Access-Control-Allow-Origin',
+      'Access-Control-Allow-Headers',
+      'Access-Control-Allow-Methods',
+    ],
+    exposedHeaders: ['tg-init-data'],
   });
 
   // Enable validation

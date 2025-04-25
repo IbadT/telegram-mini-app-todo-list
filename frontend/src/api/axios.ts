@@ -14,7 +14,7 @@ instance.interceptors.request.use((config) => {
   const tgWebApp = window.Telegram?.WebApp;
   
   if (tgWebApp?.initData) {
-    config.headers['tg-web-app-data'] = tgWebApp.initData;
+    config.headers['tg-init-data'] = tgWebApp.initData;
     
     // Для TypeScript можно добавить явную проверку
     if (tgWebApp.initDataUnsafe?.user) {
