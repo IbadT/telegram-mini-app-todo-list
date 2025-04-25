@@ -5,8 +5,10 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const instance = axios.create({
   baseURL: `${API_URL}/api`,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  withCredentials: true
 });
 
 // Безопасное использование Telegram.WebApp
@@ -22,22 +24,38 @@ instance.interceptors.request.use((config) => {
     }
   }
   
+  console.log('Request config:', {
+    url: config.url,
+    method: config.method,
+    headers: config.headers,
+    data: config.data
+  });
+  
   return config;
 });
 
 // Обработчик ошибок с проверкой Telegram WebApp
 instance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('Response:', {
+      status: response.status,
+      data: response.data
+    });
+    return response;
+  },
   (error) => {
-    const tgWebApp = window.Telegram?.WebApp;
+    console.error('API Error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    });
     
+    const tgWebApp = window.Telegram?.WebApp;
     if (tgWebApp?.showAlert) {
       const errorMessage = error.response?.data?.message || 
                          error.message || 
                          'Произошла ошибка';
       tgWebApp.showAlert(errorMessage);
-    } else {
-      console.error('API Error:', error);
     }
     
     return Promise.reject(error);

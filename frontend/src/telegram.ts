@@ -14,5 +14,14 @@ export function initializeTelegramSDK() {
     
     // Включаем кнопку "назад"
     tgWebApp.enableClosingConfirmation();
+    
+    // Логируем данные инициализации для отладки
+    console.log('Telegram WebApp initialized:', {
+      initData: tgWebApp.initData,
+      initDataUnsafe: tgWebApp.initDataUnsafe,
+      version: tgWebApp.version
+    });
+  } else {
+    console.warn('Telegram WebApp not found. Running in browser mode.');
   }
 } 
