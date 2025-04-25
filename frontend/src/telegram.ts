@@ -42,6 +42,11 @@ export function initializeTelegramSDK() {
     // Включаем кнопку "назад"
     tgWebApp.enableClosingConfirmation();
     
+    // Сохраняем initData для использования в запросах
+    if (tgWebApp.initData) {
+      localStorage.setItem('tg-init-data', tgWebApp.initData);
+    }
+    
     // Логируем данные инициализации для отладки
     console.log('Telegram WebApp initialized:', {
       initData: tgWebApp.initData,

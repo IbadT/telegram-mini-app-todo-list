@@ -13,14 +13,11 @@ const instance = axios.create({
 
 // Request interceptor
 instance.interceptors.request.use((config) => {
-  const tgWebApp = window.Telegram?.WebApp;
+  // Получаем сохраненные данные инициализации
+  const initData = localStorage.getItem('tg-init-data');
   
-  if (tgWebApp?.initData) {
-    config.headers['tg-init-data'] = tgWebApp.initData;
-    
-    if (tgWebApp.initDataUnsafe?.user) {
-      config.headers['tg-user-id'] = tgWebApp.initDataUnsafe.user.id.toString();
-    }
+  if (initData) {
+    config.headers['tg-init-data'] = initData;
   }
   
   return config;
