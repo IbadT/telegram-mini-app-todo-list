@@ -1,15 +1,13 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
 const instance = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: 'https://telegram-mini-app-todo-list.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
   },
-  withCredentials: true
+  withCredentials: true,
 });
 
 // Set auth token from localStorage if it exists
