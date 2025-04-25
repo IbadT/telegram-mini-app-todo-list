@@ -5,10 +5,10 @@ import './index.css';
 import { initializeTelegramSDK } from './telegram';
 
 // Инициализируем Telegram WebApp перед рендерингом приложения
-initializeTelegramSDK().then(() => {
-  ReactDOM.createRoot(document.getElementById('root')!).render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
-});
+initializeTelegramSDK();
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
