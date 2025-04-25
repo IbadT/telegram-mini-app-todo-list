@@ -16,6 +16,8 @@ const MainContent = () => {
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
   const [isJoinProjectModalOpen, setIsJoinProjectModalOpen] = useState(false);
 
+  console.log({ projects, tasks });
+
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]);

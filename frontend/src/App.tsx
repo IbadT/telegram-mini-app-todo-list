@@ -22,7 +22,7 @@ function App() {
   const [isJoinProjectModalOpen, setIsJoinProjectModalOpen] = useState(false);
   const setUser = useAuthStore((state) => state.setUser);
 
-  console.log({ projects });
+  console.log({ projects, tasks });
 
   useEffect(() => {
     fetchProjects();
