@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
+import { CreateCategoryDto } from '../types';
 import { useCategoryStore } from '../store/categoryStore';
 
 interface AddCategoryModalProps {
@@ -8,16 +9,36 @@ interface AddCategoryModalProps {
   onClose: () => void;
 }
 
-interface CreateCategoryForm {
-  name: string;
-  color: string;
-}
-
 export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ isOpen, onClose }) => {
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<CreateCategoryForm>();
-  const { addCategory } = useCategoryStore();
+  const { register, handleSubmit, formState: { errors }, reset, control } = useForm<CreateCategoryDto>();
+  const { addCategory, categories } = useCategoryStore();
+  const [categoryError, setCategoryError] = useState<string | null>(null);
 
-  const onSubmit = async (data: CreateCategoryForm) => {
+  // Watch for changes in the name field
+  const categoryName = useWatch({
+    control,
+    name: 'name',
+  });
+
+  // Check for duplicate categories whenever the name changes
+  useEffect(() => {
+    if (categoryName) {
+      const normalizedInput = categoryName.toLowerCase().trim();
+      const isDuplicate = categories.some(
+        category => category.name.toLowerCase().trim() === normalizedInput
+      );
+      
+      if (isDuplicate) {
+        setCategoryError('Category with this name already exists');
+      } else {
+        setCategoryError(null);
+      }
+    } else {
+      setCategoryError(null);
+    }
+  }, [categoryName, categories]);
+
+  const onSubmit = async (data: CreateCategoryDto) => {
     try {
       await addCategory(data);
       reset();
@@ -26,6 +47,8 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ isOpen, onCl
       console.error('Failed to add category:', error);
     }
   };
+
+  const isSubmitDisabled = !!categoryError || !categoryName;
 
   return (
     <Transition show={isOpen} as={React.Fragment}>
@@ -63,9 +86,12 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ isOpen, onCl
                     <input
                       type="text"
                       {...register('name', { required: 'Name is required' })}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ${
+                        categoryError ? 'border-red-500' : ''
+                      }`}
                     />
                     {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+                    {categoryError && <p className="text-red-500 text-sm">{categoryError}</p>}
                   </div>
 
                   <div>
@@ -88,7 +114,12 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ isOpen, onCl
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                      disabled={isSubmitDisabled}
+                      className={`inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                        isSubmitDisabled
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-blue-100 text-blue-900 hover:bg-blue-200 focus-visible:ring-blue-500'
+                      }`}
                     >
                       Add Category
                     </button>
