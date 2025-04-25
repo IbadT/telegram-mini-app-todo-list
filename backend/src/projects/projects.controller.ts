@@ -35,6 +35,7 @@ export class ProjectsController {
   @ApiResponse({ status: 200, description: 'Return all projects.' })
   findAll(@Req() req: Request) {
     // TODO: Replace with actual user ID from auth
+
     const userId = 1;
     return this.projectsService.findAll(userId);
   }
