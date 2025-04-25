@@ -11,38 +11,27 @@ const instance = axios.create({
   withCredentials: true
 });
 
-// Безопасное использование Telegram.WebApp
+// Request interceptor
 instance.interceptors.request.use((config) => {
   const tgWebApp = window.Telegram?.WebApp;
   
   if (tgWebApp?.initData) {
     config.headers['tg-init-data'] = tgWebApp.initData;
     
-    // Для TypeScript можно добавить явную проверку
     if (tgWebApp.initDataUnsafe?.user) {
       config.headers['tg-user-id'] = tgWebApp.initDataUnsafe.user.id.toString();
     }
   }
   
-  console.log('Request config:', {
-    url: config.url,
-    method: config.method,
-    headers: config.headers,
-    data: config.data
-  });
-  
   return config;
+}, (error) => {
+  console.error('Request error:', error);
+  return Promise.reject(error);
 });
 
-// Обработчик ошибок с проверкой Telegram WebApp
+// Response interceptor
 instance.interceptors.response.use(
-  (response) => {
-    console.log('Response:', {
-      status: response.status,
-      data: response.data
-    });
-    return response;
-  },
+  (response) => response,
   (error) => {
     console.error('API Error:', {
       message: error.message,
