@@ -1,0 +1,68 @@
+export enum Priority {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  color: string;
+  projectId: number;
+}
+
+export interface Task {
+  id: number;
+  title: string;
+  description?: string;
+  completed: boolean;
+  priority: Priority;
+  dueDate?: string;
+  category: Category;
+  projectId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTaskDto {
+  title: string;
+  description?: string;
+  priority: Priority;
+  dueDate?: string;
+  categoryId: number;
+}
+
+export interface UpdateTaskDto {
+  title?: string;
+  description?: string;
+  completed?: boolean;
+  priority?: Priority;
+  dueDate?: string;
+  categoryId?: number;
+}
+
+export interface Project {
+  id: number;
+  name: string;
+  description?: string;
+  tasks: Task[];
+  categories: Category[];
+  userId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProjectDto {
+  name: string;
+  description?: string;
+}
+
+export interface UpdateProjectDto {
+  name?: string;
+  description?: string;
+}
+
+export interface CreateCategoryDto {
+  name: string;
+  color: string;
+} 

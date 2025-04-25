@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: telegram_mini_app
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/telegram_mini_app
+      JWT_SECRET: your-super-secret-key-change-in-production
+      TELEGRAM_BOT_TOKEN: 7151349384:AAGxCaPjn4C6FJn_VCwKRGJwC8tb3RNNlcU
+      PORT: 3000
+      FRONTEND_URL: http://localhost:5173
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:3000
+      VITE_BOT_USERNAME: miniAppTodoList
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data: 
