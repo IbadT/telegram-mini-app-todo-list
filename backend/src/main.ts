@@ -17,6 +17,7 @@ async function bootstrap() {
       'https://*.t.me',
       'http://localhost:5173', // For local development
       'http://localhost:3000', // For local development
+      'https://telegram-mini-app-todo-list.onrender.com',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
