@@ -18,6 +18,8 @@ async function bootstrap() {
       'http://localhost:5173', // For local development
       'http://localhost:3000', // For local development
       'https://telegram-mini-app-todo-list.onrender.com',
+      'https://ibadt-telegram-mini-app-todo-list-66c9.twc1.net', // Ваш фронтенд
+      'https://telegram-web-app-url.com' // Домен Telegram WebApp
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -30,6 +32,7 @@ async function bootstrap() {
       'Access-Control-Allow-Headers',
       'Access-Control-Allow-Methods',
       'Access-Control-Allow-Credentials',
+      'X-Telegram-Init-Data',
     ],
     exposedHeaders: ['tg-init-data'],
   });
