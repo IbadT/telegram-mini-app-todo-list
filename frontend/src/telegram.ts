@@ -8,13 +8,7 @@ export function initializeTelegramSDK() {
     console.log('Telegram WebApp found:', {
       initData: tgWebApp.initData,
       initDataUnsafe: tgWebApp.initDataUnsafe,
-      version: tgWebApp.version,
-      platform: tgWebApp.platform,
-      colorScheme: tgWebApp.colorScheme,
-      viewportHeight: tgWebApp.viewportHeight,
-      viewportStableHeight: tgWebApp.viewportStableHeight,
-      isExpanded: tgWebApp.isExpanded,
-      themeParams: tgWebApp.themeParams
+      version: tgWebApp.version
     });
     
     // Инициализируем приложение
