@@ -24,6 +24,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     try {
       const response = await axios.get(`/projects/${projectId}/tasks`);
       set({ tasks: response.data, isLoading: false });
+      useProjectStore.getState().updateProjectTasks(projectId, response.data);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       set({ error: 'Failed to fetch tasks', isLoading: false });
@@ -37,16 +38,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       const response = await axios.post(`/projects/${projectId}/tasks`, task);
       const newTasks = [...get().tasks, response.data];
       set({ tasks: newTasks, isLoading: false });
-
-      // Update project state
-      const projectStore = useProjectStore.getState();
-      const currentProject = projectStore.currentProject;
-      if (currentProject && currentProject.id === projectId) {
-        projectStore.setCurrentProject({
-          ...currentProject,
-          tasks: newTasks
-        });
-      }
+      useProjectStore.getState().updateProjectTasks(projectId, newTasks);
     } catch (error) {
       console.error('Error adding task:', error);
       set({ error: 'Failed to add task', isLoading: false });
@@ -60,16 +52,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       const response = await axios.patch(`/projects/${projectId}/tasks/${id}`, task);
       const updatedTasks = get().tasks.map((t) => (t.id === id ? response.data : t));
       set({ tasks: updatedTasks, isLoading: false });
-
-      // Update project state
-      const projectStore = useProjectStore.getState();
-      const currentProject = projectStore.currentProject;
-      if (currentProject && currentProject.id === projectId) {
-        projectStore.setCurrentProject({
-          ...currentProject,
-          tasks: updatedTasks
-        });
-      }
+      useProjectStore.getState().updateProjectTasks(projectId, updatedTasks);
     } catch (error) {
       console.error('Error updating task:', error);
       set({ error: 'Failed to update task', isLoading: false });
@@ -83,16 +66,7 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       await axios.delete(`/projects/${projectId}/tasks/${id}`);
       const updatedTasks = get().tasks.filter((t) => t.id !== id);
       set({ tasks: updatedTasks, isLoading: false });
-
-      // Update project state
-      const projectStore = useProjectStore.getState();
-      const currentProject = projectStore.currentProject;
-      if (currentProject && currentProject.id === projectId) {
-        projectStore.setCurrentProject({
-          ...currentProject,
-          tasks: updatedTasks
-        });
-      }
+      useProjectStore.getState().updateProjectTasks(projectId, updatedTasks);
     } catch (error) {
       console.error('Error deleting task:', error);
       set({ error: 'Failed to delete task', isLoading: false });

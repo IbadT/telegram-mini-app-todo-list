@@ -11,27 +11,35 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/telegram_mini_app
-      JWT_SECRET: your-super-secret-key-change-in-production
-      TELEGRAM_BOT_TOKEN: 7151349384:AAGxCaPjn4C6FJn_VCwKRGJwC8tb3RNNlcU
-      PORT: 3000
-      FRONTEND_URL: http://localhost:5173
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/telegram_mini_app
+      - NODE_ENV=development
     depends_on:
       - postgres
+    command: sh -c "npm install && npx prisma generate && npx prisma migrate dev && npm run start:dev"
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     ports:
       - "5173:5173"
     environment:
-      VITE_API_URL: http://localhost:3000
-      VITE_BOT_USERNAME: miniAppTodoList
+      - VITE_API_URL=http://localhost:3000
     depends_on:
       - backend
+    command: sh -c "npm install && npm run dev"
 
 volumes:
   postgres_data: 

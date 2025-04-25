@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import axios from '../api/axios';
-import { Project, CreateProjectDto, UpdateProjectDto } from '../types';
+import { Project, CreateProjectDto, UpdateProjectDto, Task } from '../types';
 import { AxiosError } from 'axios';
 
 interface ProjectStore {
@@ -13,6 +13,7 @@ interface ProjectStore {
   addProject: (project: CreateProjectDto) => Promise<void>;
   updateProject: (id: number, project: UpdateProjectDto) => Promise<void>;
   deleteProject: (id: number) => Promise<void>;
+  updateProjectTasks: (projectId: number, tasks: Task[]) => void;
 }
 
 export const useProjectStore = create<ProjectStore>((set) => ({
@@ -96,5 +97,31 @@ export const useProjectStore = create<ProjectStore>((set) => ({
       set({ error: 'Failed to delete project', isLoading: false });
       throw error;
     }
+  },
+
+  updateProjectTasks: (projectId: number, tasks: Task[]) => {
+    set((state) => {
+      const updatedProjects = state.projects.map((project) => {
+        if (project.id === projectId) {
+          return {
+            ...project,
+            tasks: tasks
+          };
+        }
+        return project;
+      });
+
+      const updatedCurrentProject = state.currentProject?.id === projectId
+        ? {
+            ...state.currentProject,
+            tasks: tasks
+          }
+        : state.currentProject;
+
+      return {
+        projects: updatedProjects,
+        currentProject: updatedCurrentProject
+      };
+    });
   },
 })); 
