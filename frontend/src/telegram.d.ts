@@ -16,6 +16,19 @@ interface TelegramWebApp {
   setBackgroundColor: (color: string) => void;
   enableClosingConfirmation: () => void;
   version: string;
+  platform: string;
+  colorScheme: string;
+  viewportHeight: number;
+  viewportStableHeight: number;
+  isExpanded: boolean;
+  themeParams: {
+    bg_color?: string;
+    text_color?: string;
+    hint_color?: string;
+    link_color?: string;
+    button_color?: string;
+    button_text_color?: string;
+  };
 }
 
 declare global {

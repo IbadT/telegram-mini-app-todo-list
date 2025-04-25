@@ -22,9 +22,11 @@ async function bootstrap() {
       'Content-Type',
       'Authorization',
       'tg-init-data',
+      'tg-user-id',
       'Access-Control-Allow-Origin',
       'Access-Control-Allow-Headers',
       'Access-Control-Allow-Methods',
+      'Access-Control-Allow-Credentials',
     ],
     exposedHeaders: ['tg-init-data'],
   });

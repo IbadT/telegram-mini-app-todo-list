@@ -2,6 +2,8 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+console.log('API URL:', API_URL);
+
 const instance = axios.create({
   baseURL: `${API_URL}/api`,
   withCredentials: true,
@@ -13,6 +15,11 @@ const instance = axios.create({
 // Безопасное использование Telegram.WebApp
 instance.interceptors.request.use((config) => {
   const tgWebApp = window.Telegram?.WebApp;
+  console.log('Telegram WebApp in request interceptor:', {
+    exists: !!tgWebApp,
+    initData: tgWebApp?.initData,
+    initDataUnsafe: tgWebApp?.initDataUnsafe
+  });
   
   if (tgWebApp?.initData) {
     config.headers['tg-init-data'] = tgWebApp.initData;
@@ -23,13 +30,35 @@ instance.interceptors.request.use((config) => {
     }
   }
   
+  console.log('Request config:', {
+    url: config.url,
+    method: config.method,
+    headers: config.headers,
+    data: config.data
+  });
+  
   return config;
 });
 
 // Обработчик ошибок с проверкой Telegram WebApp
 instance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('Response received:', {
+      status: response.status,
+      data: response.data,
+      headers: response.headers
+    });
+    return response;
+  },
   (error) => {
+    console.error('API Error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      headers: error.response?.headers,
+      config: error.config
+    });
+    
     const tgWebApp = window.Telegram?.WebApp;
     
     if (tgWebApp?.showAlert) {
@@ -37,8 +66,6 @@ instance.interceptors.response.use(
                          error.message || 
                          'Произошла ошибка';
       tgWebApp.showAlert(errorMessage);
-    } else {
-      console.error('API Error:', error);
     }
     
     return Promise.reject(error);

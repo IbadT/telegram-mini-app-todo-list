@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { TasksModule } from './tasks/tasks.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProjectsModule } from './projects/projects.module';
+import { TelegramMiddleware } from './middleware/telegram.middleware';
 
 @Module({
   imports: [
@@ -18,4 +19,10 @@ import { ProjectsModule } from './projects/projects.module';
     ProjectsModule,
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(TelegramMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}
