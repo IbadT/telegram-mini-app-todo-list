@@ -21,6 +21,8 @@ const SharedProjectPage = () => {
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
 
+  console.log({ projects, tasks });
+
   const isCreator = user?.id === project?.creatorId;
 
   const getPriorityColor = (priority: string) => {
