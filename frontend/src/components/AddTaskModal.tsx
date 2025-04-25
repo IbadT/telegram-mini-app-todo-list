@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { useForm } from 'react-hook-form';
 import { CreateTaskDto, Priority, Project } from '../types';
@@ -15,24 +15,33 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, cur
   const { register, handleSubmit, formState: { errors }, reset } = useForm<CreateTaskDto>();
   const { addTask } = useTaskStore();
   const { categories, fetchCategories } = useCategoryStore();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+    if (isOpen) {
+      fetchCategories();
+      setError(null);
+    }
+  }, [isOpen, fetchCategories]);
 
   const onSubmit = async (data: CreateTaskDto) => {
     try {
-      console.log('Form data before submission:', data);
-      if (currentProject?.id) {
-        await addTask(currentProject.id, data);
-        console.log('Task added successfully');
-        reset();
-        onClose();
-      } else {
-        console.error('No project selected');
+      if (!currentProject?.id) {
+        setError('No project selected');
+        return;
       }
+
+      if (!categories.length) {
+        setError('No categories available');
+        return;
+      }
+
+      await addTask(currentProject.id, data);
+      reset();
+      onClose();
     } catch (error) {
       console.error('Failed to add task:', error);
+      setError('Failed to add task. Please try again.');
     }
   };
 
@@ -68,6 +77,11 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, cur
                 <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
                   Add New Task
                 </Dialog.Title>
+                {error && (
+                  <div className="mt-2 text-red-500 text-sm">
+                    {error}
+                  </div>
+                )}
                 <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
@@ -127,7 +141,6 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, cur
                       {...register('dueDate')}
                       onChange={(e) => {
                         register('dueDate').onChange(e);
-                        // Force blur to close the calendar picker
                         e.target.blur();
                       }}
                       className="mt-1 block w-full px-4 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:cursor-pointer"
