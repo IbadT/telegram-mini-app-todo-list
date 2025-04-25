@@ -1,20 +1,19 @@
 import React, { useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { useForm } from 'react-hook-form';
-import { CreateTaskDto, Priority } from '../types';
+import { CreateTaskDto, Priority, Project } from '../types';
 import { useTaskStore } from '../store/taskStore';
-import { useProjectStore } from '../store/projectStore';
 import { useCategoryStore } from '../store/categoryStore';
 
 interface AddTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
+  currentProject?: Project;
 }
 
-export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose }) => {
+export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, currentProject }) => {
   const { register, handleSubmit, formState: { errors }, reset } = useForm<CreateTaskDto>();
   const { addTask } = useTaskStore();
-  const { currentProject } = useProjectStore();
   const { categories, fetchCategories } = useCategoryStore();
 
   useEffect(() => {

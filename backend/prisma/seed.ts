@@ -20,7 +20,7 @@ async function main() {
   const defaultProject = await prisma.project.create({
     data: {
       name: 'Default Project',
-      userId: defaultUser.id,
+      ownerId: defaultUser.id,
     },
   });
 

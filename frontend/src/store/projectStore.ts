@@ -14,6 +14,8 @@ interface ProjectStore {
   updateProject: (id: number, project: UpdateProjectDto) => Promise<void>;
   deleteProject: (id: number) => Promise<void>;
   updateProjectTasks: (projectId: number, tasks: Task[]) => void;
+  shareProject: (projectId: number) => Promise<string>;
+  joinProject: (shareCode: string) => Promise<void>;
 }
 
 export const useProjectStore = create<ProjectStore>((set) => ({
@@ -123,5 +125,57 @@ export const useProjectStore = create<ProjectStore>((set) => ({
         currentProject: updatedCurrentProject
       };
     });
+  },
+
+  shareProject: async (projectId: number) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.post(`/projects/${projectId}/share`);
+      set({ isLoading: false });
+      return response.data.shareCode;
+    } catch (error) {
+      console.error('Error sharing project:', error);
+      set({ error: 'Failed to share project', isLoading: false });
+      throw error;
+    }
+  },
+
+  joinProject: async (shareCode: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.post('/projects/join', { shareCode });
+      console.log('Joined project response:', response.data);
+      
+      // Обновляем список проектов
+      set((state) => {
+        const newProject = response.data.project;
+        const isProjectExists = state.projects.some(p => p.id === newProject.id);
+        
+        if (!isProjectExists) {
+          return {
+            projects: [...state.projects, newProject],
+            isLoading: false,
+          };
+        }
+        
+        return {
+          projects: state.projects.map(p => 
+            p.id === newProject.id ? newProject : p
+          ),
+          isLoading: false,
+        };
+      });
+    } catch (error) {
+      console.error('Error joining project:', error);
+      if (error instanceof AxiosError) {
+        console.error('Error details:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
+      }
+      set({ error: 'Failed to join project', isLoading: false });
+      throw error;
+    }
   },
 })); 

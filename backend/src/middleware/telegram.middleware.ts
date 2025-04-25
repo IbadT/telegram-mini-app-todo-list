@@ -6,9 +6,12 @@ import * as crypto from 'crypto';
 export class TelegramMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     const initData = req.headers['tg-init-data'] as string;
-    const botToken = process.env.BOT_TOKEN;
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    console.log({ botToken });
+    
 
     // Пропускаем запрос, если нет данных инициализации
+    // if (!initData || !botToken) {
     if (!initData || !botToken) {
       console.warn('No Telegram init data or bot token found');
       return next();

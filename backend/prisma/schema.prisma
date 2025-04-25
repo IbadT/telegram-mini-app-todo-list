@@ -8,27 +8,43 @@ datasource db {
 }
 
 model User {
-  id         Int       @id @default(autoincrement())
-  telegramId Int       @unique
+  id         Int            @id @default(autoincrement())
+  telegramId Int            @unique
   username   String?
   firstName  String
   lastName   String?
-  projects   Project[]
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  projects   Project[]      @relation("OwnedProjects")
+  sharedProjects ProjectShare[]
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
   @@map("users")
 }
 
 model Project {
-  id          Int       @id @default(autoincrement())
+  id          Int            @id @default(autoincrement())
   name        String
   description String?
   tasks       Task[]
-  user        User      @relation(fields: [userId], references: [id])
-  userId      Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  owner       User           @relation("OwnedProjects", fields: [ownerId], references: [id])
+  ownerId     Int
+  shareCode   String?        @unique
+  sharedWith  ProjectShare[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   @@map("projects")
+}
+
+model ProjectShare {
+  id        Int      @id @default(autoincrement())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([projectId, userId])
+  @@map("project_shares")
 }
 
 model Task {

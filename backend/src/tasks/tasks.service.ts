@@ -12,7 +12,7 @@ export class TasksService {
     const project = await this.prisma.project.findFirst({
       where: {
         id: projectId,
-        userId,
+        ownerId: userId,
       },
     });
 
@@ -49,7 +49,7 @@ export class TasksService {
     const project = await this.prisma.project.findFirst({
       where: {
         id: projectId,
-        userId,
+        ownerId: userId,
       },
     });
 
@@ -76,7 +76,7 @@ export class TasksService {
         id,
         projectId,
         project: {
-          userId,
+          ownerId: userId,
         },
       },
       include: {

@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
+import { ShareProjectDto } from './dto/share-project.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
 
@@ -82,5 +83,39 @@ export class ProjectsController {
     // TODO: Replace with actual user ID from auth
     const userId = 1;
     return this.projectsService.remove(userId, +id);
+  }
+
+  @Post(':id/share')
+  @ApiOperation({ summary: 'Generate or get share code for a project' })
+  @ApiResponse({ status: 200, description: 'Share code generated or retrieved successfully.' })
+  @ApiResponse({ status: 404, description: 'Project not found.' })
+  shareProject(@Req() req: Request, @Param('id') id: string) {
+    const initData = req.headers['tg-init-data'];
+    console.log('Telegram init data:', initData);
+    
+    // TODO: Replace with actual user ID from auth
+    const userId = 1;
+    return this.projectsService.shareProject(userId, +id);
+  }
+
+  @Get('share/:code')
+  @ApiOperation({ summary: 'Get project by share code' })
+  @ApiResponse({ status: 200, description: 'Return the project.' })
+  @ApiResponse({ status: 404, description: 'Project not found.' })
+  getProjectByShareCode(@Param('code') code: string) {
+    return this.projectsService.getProjectByShareCode(code);
+  }
+
+  @Post('join')
+  @ApiOperation({ summary: 'Join a project using share code' })
+  @ApiResponse({ status: 200, description: 'Successfully joined the project.' })
+  @ApiResponse({ status: 404, description: 'Project not found.' })
+  joinProject(@Req() req: Request, @Body() shareProjectDto: ShareProjectDto) {
+    const initData = req.headers['tg-init-data'];
+    console.log('Telegram init data:', initData);
+    
+    // TODO: Replace with actual user ID from auth
+    const userId = 1;
+    return this.projectsService.joinProject(userId, shareProjectDto.shareCode);
   }
 } 

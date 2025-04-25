@@ -13,6 +13,8 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'https://*.telegram.org',
+      'https://t.me',
+      'https://*.t.me',
       'http://localhost:5173', // For local development
       'http://localhost:3000', // For local development
     ],
