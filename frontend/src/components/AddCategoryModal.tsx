@@ -82,43 +82,45 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ isOpen, onCl
                 </Dialog.Title>
                 <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                     <input
                       type="text"
                       {...register('name', { required: 'Name is required' })}
-                      className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ${
-                        categoryError ? 'border-red-500' : ''
+                      className={`mt-1 block w-full px-4 py-2.5 rounded-lg border shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ${
+                        categoryError 
+                          ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
+                          : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
                       }`}
                     />
-                    {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
-                    {categoryError && <p className="text-red-500 text-sm">{categoryError}</p>}
+                    {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
+                    {categoryError && <p className="text-red-500 text-sm mt-1">{categoryError}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Color</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
                     <input
                       type="color"
                       {...register('color', { required: 'Color is required' })}
-                      className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      className="mt-1 block w-full h-12 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer"
                     />
-                    {errors.color && <p className="text-red-500 text-sm">{errors.color.message}</p>}
+                    {errors.color && <p className="text-red-500 text-sm mt-1">{errors.color.message}</p>}
                   </div>
 
-                  <div className="mt-4 flex justify-end space-x-2">
+                  <div className="mt-6 flex justify-end space-x-3">
                     <button
                       type="button"
                       onClick={onClose}
-                      className="inline-flex justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
+                      className="inline-flex justify-center rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 hover:cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={isSubmitDisabled}
-                      className={`inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                      className={`inline-flex justify-center rounded-lg border border-transparent px-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ${
                         isSubmitDisabled
                           ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                          : 'bg-blue-100 text-blue-900 hover:bg-blue-200 focus-visible:ring-blue-500'
+                          : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 hover:cursor-pointer'
                       }`}
                     >
                       Add Category

@@ -37,7 +37,7 @@ const TaskList = ({ tasks }: TaskListProps) => {
                 type="checkbox"
                 checked={task.completed}
                 onChange={() => currentProject && toggleTaskCompletion(currentProject.id, task.id)}
-                className="mt-1 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                className="mt-1 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 hover:cursor-pointer transition-all duration-200"
               />
               <div>
                 <h3
@@ -78,7 +78,7 @@ const TaskList = ({ tasks }: TaskListProps) => {
             </div>
             <button
               onClick={() => currentProject && deleteTask(currentProject.id, task.id)}
-              className="text-gray-400 hover:text-red-500 hover:cursor-pointer"
+              className="text-gray-400 hover:text-red-500 hover:cursor-pointer transition-all duration-200"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

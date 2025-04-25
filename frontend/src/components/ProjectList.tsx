@@ -17,7 +17,7 @@ const ProjectList = () => {
         >
           <div className="flex items-center justify-between">
             <div
-              className="flex-grow cursor-pointer"
+              className="flex-grow cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 p-2 rounded-lg"
               onClick={() => setCurrentProject(project)}
             >
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
@@ -42,7 +42,7 @@ const ProjectList = () => {
             </div>
             <button
               onClick={() => deleteProject(project.id)}
-              className="ml-4 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+              className="ml-4 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:cursor-pointer transition-all duration-200 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               <svg
                 className="h-5 w-5"
