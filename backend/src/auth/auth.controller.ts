@@ -1,6 +1,5 @@
-import { Controller, Post, Body, Req } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('auth')
@@ -12,7 +11,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Authenticate with Telegram' })
   @ApiResponse({ status: 200, description: 'Returns JWT token and user data.' })
   @ApiResponse({ status: 401, description: 'Invalid authentication data.' })
-  async validateTelegramLogin(@Body() data: any) {
+  async validateTelegramLogin(@Body() data: { initData: string }) {
     return this.authService.validateTelegramLogin(data);
   }
 } 
