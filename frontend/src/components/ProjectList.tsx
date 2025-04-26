@@ -37,50 +37,44 @@ const ProjectList = () => {
               )}
               <div className="mt-2 flex flex-wrap gap-2">
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                  {project.tasks.length} tasks
+                  {project.tasks?.length || 0} tasks
                 </span>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                  {project.tasks.filter((t) => t.completed).length} completed
+                  {project.tasks?.filter((t) => t.completed).length || 0} completed
                 </span>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
                   Created {format(new Date(project.createdAt), 'MMM d, yyyy')}
                 </span>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex space-x-2">
               <button
                 onClick={() => handleShare(project.id)}
-                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:cursor-pointer transition-all duration-200 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="text-gray-400 hover:text-blue-500 hover:cursor-pointer transition-all duration-200"
               >
                 <svg
+                  xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                  />
+                  <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
                 </svg>
               </button>
               <button
                 onClick={() => deleteProject(project.id)}
-                className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:cursor-pointer transition-all duration-200 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="text-gray-400 hover:text-red-500 hover:cursor-pointer transition-all duration-200"
               >
                 <svg
+                  xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
                 >
                   <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    fillRule="evenodd"
+                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                    clipRule="evenodd"
                   />
                 </svg>
               </button>
@@ -88,12 +82,16 @@ const ProjectList = () => {
           </div>
         </div>
       ))}
-
-      {shareModalProject !== null && (
+      {projects.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-gray-500 dark:text-gray-400">No projects yet. Create one to get started!</p>
+        </div>
+      )}
+      {shareModalProject && (
         <ShareProjectModal
           isOpen={true}
-          onClose={() => setShareModalProject(null)}
           projectId={shareModalProject}
+          onClose={() => setShareModalProject(null)}
         />
       )}
     </div>

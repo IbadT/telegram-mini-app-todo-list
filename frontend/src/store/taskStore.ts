@@ -86,11 +86,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         completed: !task.completed
       });
 
-      set((state) => ({
-        tasks: state.tasks.map((t) => (t.id === taskId ? response.data : t)),
-        isLoading: false
-      }));
-      useProjectStore.getState().updateProjectTasks(projectId, get().tasks.map((t) => (t.id === taskId ? response.data : t)));
+      const updatedTasks = get().tasks.map((t) => (t.id === taskId ? response.data : t));
+      set({ tasks: updatedTasks, isLoading: false });
+      
+      // Обновляем состояние проекта с новыми задачами
+      useProjectStore.getState().updateProjectTasks(projectId, updatedTasks);
     } catch (error) {
       set({ error: 'Failed to toggle task completion', isLoading: false });
       throw error;
