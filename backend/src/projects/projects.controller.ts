@@ -8,95 +8,75 @@ import {
   Delete,
   Req,
   Res,
-  // UseGuards,
+  UseGuards,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
-import { ShareProjectDto } from './dto/share-project.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UpdateProjectDto } from './dto/update-project.dto';
+import { User } from '@prisma/client';
+
+interface RequestWithUser extends Request {
+  user: User;
+}
 
 @ApiTags('projects')
 @ApiBearerAuth()
-// @UseGuards(JwtAuthGuard)
 @Controller('projects')
+@UseGuards(JwtAuthGuard)
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
   
   @Post()
   @ApiOperation({ summary: 'Create a new project' })
   @ApiResponse({ status: 201, description: 'Project created successfully.' })
-  create(@Req() req: Request, @Body() createProjectDto: CreateProjectDto) {
-    const initData = req.headers['tg-init-data'];
-    console.log('Telegram init data:', initData);
-    
-    // TODO: Replace with actual user ID from auth
-    const userId = 1;
-    return this.projectsService.create(userId, createProjectDto);
+  create(@Body() createProjectDto: CreateProjectDto, @Req() req: RequestWithUser) {
+    return this.projectsService.create(createProjectDto, req.user.id);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all projects' })
   @ApiResponse({ status: 200, description: 'Return all projects.' })
-  findAll(@Req() req: Request) {
-    const initData = req.headers['tg-init-data'];
-    console.log('Telegram init data:', initData);
-    
-    // TODO: Replace with actual user ID from auth
-    const userId = 1;
-    return this.projectsService.findAll(userId);
+  findAll(@Req() req: RequestWithUser) {
+    return this.projectsService.findAll(req.user.id);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a project by ID' })
   @ApiResponse({ status: 200, description: 'Return the project.' })
   @ApiResponse({ status: 404, description: 'Project not found.' })
-  findOne(@Req() req: Request, @Param('id') id: string) {
-    const initData = req.headers['tg-init-data'];
-    console.log('Telegram init data:', initData);
-    
-    // TODO: Replace with actual user ID from auth
-    const userId = 1;
-    return this.projectsService.findOne(userId, +id);
+  findOne(@Param('id') id: string, @Req() req: RequestWithUser) {
+    return this.projectsService.findOne(+id, req.user.id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a project' })
   @ApiResponse({ status: 200, description: 'Project updated successfully.' })
   @ApiResponse({ status: 404, description: 'Project not found.' })
-  update(@Req() req: Request, @Param('id') id: string, @Body() updateProjectDto: any) {
-    const initData = req.headers['tg-init-data'];
-    console.log('Telegram init data:', initData);
-    
-    // TODO: Replace with actual user ID from auth
-    const userId = 1;
-    return this.projectsService.update(userId, +id, updateProjectDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateProjectDto: UpdateProjectDto,
+    @Req() req: RequestWithUser,
+  ) {
+    return this.projectsService.update(+id, updateProjectDto, req.user.id);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a project' })
   @ApiResponse({ status: 200, description: 'Project deleted successfully.' })
   @ApiResponse({ status: 404, description: 'Project not found.' })
-  remove(@Req() req: Request, @Param('id') id: string) {
-    const initData = req.headers['tg-init-data'];
-    console.log('Telegram init data:', initData);
-    
-    // TODO: Replace with actual user ID from auth
-    const userId = 1;
-    return this.projectsService.remove(userId, +id);
+  remove(@Param('id') id: string, @Req() req: RequestWithUser) {
+    return this.projectsService.remove(+id, req.user.id);
   }
 
   @Post(':id/share')
   @ApiOperation({ summary: 'Generate or get share code for a project' })
   @ApiResponse({ status: 200, description: 'Share code generated or retrieved successfully.' })
   @ApiResponse({ status: 404, description: 'Project not found.' })
-  shareProject(@Req() req: Request, @Param('id') id: string) {
-    const initData = req.headers['tg-init-data'];
-    console.log('Telegram init data:', initData);
-    
-    // TODO: Replace with actual user ID from auth
-    const userId = 1;
-    return this.projectsService.shareProject(userId, +id);
+  generateShareCode(@Param('id') id: string, @Req() req: RequestWithUser) {
+    return this.projectsService.generateShareCode(+id, req.user.id);
   }
 
   @Get('share/:code')
@@ -107,16 +87,11 @@ export class ProjectsController {
     return this.projectsService.getProjectByShareCode(code);
   }
 
-  @Post('join')
+  @Post('join/:shareCode')
   @ApiOperation({ summary: 'Join a project using share code' })
   @ApiResponse({ status: 200, description: 'Successfully joined the project.' })
   @ApiResponse({ status: 404, description: 'Project not found.' })
-  joinProject(@Req() req: Request, @Body() shareProjectDto: ShareProjectDto) {
-    const initData = req.headers['tg-init-data'];
-    console.log('Telegram init data:', initData);
-    
-    // TODO: Replace with actual user ID from auth
-    const userId = 1;
-    return this.projectsService.joinProject(userId, shareProjectDto.shareCode);
+  joinProject(@Param('shareCode') shareCode: string, @Req() req: RequestWithUser) {
+    return this.projectsService.joinProject(shareCode, req.user.id);
   }
 } 

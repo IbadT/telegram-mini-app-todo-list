@@ -1,290 +1,157 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
-import { ShareProjectDto } from './dto/share-project.dto';
 import { randomBytes } from 'crypto';
+import { User } from '@prisma/client';
+import { UpdateProjectDto } from './dto/update-project.dto';
 
 @Injectable()
 export class ProjectsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private generateShareCode(): string {
-    // Генерируем более удобный для пользователей код
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-    for (let i = 0; i < 6; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  }
+  // public generateShareCode(): string {
+  //   // Генерируем более удобный для пользователей код
+  //   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  //   let result = '';
+  //   for (let i = 0; i < 6; i++) {
+  //     result += chars.charAt(Math.floor(Math.random() * chars.length));
+  //   }
+  //   return result;
+  // }
 
-  async create(userId: number, createProjectDto: CreateProjectDto) {
-    try {
-      // Check if user exists
-      const user = await this.prisma.user.findUnique({
-        where: { id: userId },
-      });
-
-      if (!user) {
-        throw new NotFoundException(`User with ID ${userId} not found`);
-      }
-
-      // Check if project with the same name already exists
-      const existingProject = await this.prisma.project.findFirst({
-        where: {
-          name: createProjectDto.name,
-          ownerId: userId,
-        },
-      });
-
-      if (existingProject) {
-        throw new BadRequestException(`Project with name "${createProjectDto.name}" already exists`);
-      }
-
-      // Generate share code
-      const shareCode = this.generateShareCode();
-
-      return this.prisma.project.create({
-        data: {
-          ...createProjectDto,
-          ownerId: userId,
-          shareCode,
-        },
-        include: {
-          tasks: {
-            include: {
-              category: true,
-            },
-          },
-        },
-      });
-    } catch (error) {
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
-        throw error;
-      }
-      throw new BadRequestException('Failed to create project');
-    }
+  async create(createProjectDto: CreateProjectDto, userId: number) {
+    return this.prisma.project.create({
+      data: {
+        ...createProjectDto,
+        ownerId: userId,
+      },
+      include: {
+        tasks: true,
+        shares: true,
+      },
+    });
   }
 
   async findAll(userId: number) {
-    const [ownedProjects, sharedProjects] = await Promise.all([
-      // Get projects owned by user
-      this.prisma.project.findMany({
-        where: {
-          ownerId: userId,
-        },
-        include: {
-          tasks: {
-            include: {
-              category: true,
-            },
-          },
-        },
-      }),
-      // Get projects shared with user
-      this.prisma.project.findMany({
-        where: {
-          sharedWith: {
-            some: {
-              userId,
-            },
-          },
-        },
-        include: {
-          tasks: {
-            include: {
-              category: true,
-            },
-          },
-        },
-      }),
-    ]);
-
-    return [...ownedProjects, ...sharedProjects];
+    return this.prisma.project.findMany({
+      where: {
+        OR: [
+          { ownerId: userId },
+          { shares: { some: { userId } } },
+        ],
+      },
+      include: {
+        tasks: true,
+        shares: true,
+      },
+    });
   }
 
-  async findOne(userId: number, id: number) {
-    const project = await this.prisma.project.findFirst({
+  async findOne(id: number, userId: number) {
+    return this.prisma.project.findFirst({
       where: {
         id,
         OR: [
           { ownerId: userId },
-          {
-            sharedWith: {
-              some: {
-                userId,
-              },
-            },
-          },
+          { shares: { some: { userId } } },
         ],
       },
       include: {
-        tasks: {
-          include: {
-            category: true,
-          },
-        },
+        tasks: true,
+        shares: true,
       },
     });
-
-    if (!project) {
-      throw new NotFoundException(`Project with ID ${id} not found`);
-    }
-
-    return project;
   }
 
-  async update(userId: number, id: number, updateProjectDto: any) {
-    const project = await this.findOne(userId, id);
-
-    // Only owner can update project details
-    if (project.ownerId !== userId) {
-      throw new ForbiddenException('Only project owner can update project details');
-    }
-
+  async update(id: number, updateProjectDto: UpdateProjectDto, userId: number) {
     return this.prisma.project.update({
       where: {
         id,
+        ownerId: userId,
       },
       data: updateProjectDto,
       include: {
-        tasks: {
-          include: {
-            category: true,
-          },
-        },
+        tasks: true,
+        shares: true,
       },
     });
   }
 
-  async remove(userId: number, id: number) {
-    const project = await this.findOne(userId, id);
-
-    // Only owner can delete project
-    if (project.ownerId !== userId) {
-      throw new ForbiddenException('Only project owner can delete the project');
-    }
-
+  async remove(id: number, userId: number) {
     return this.prisma.project.delete({
       where: {
         id,
+        ownerId: userId,
       },
     });
   }
 
-  async shareProject(userId: number, projectId: number) {
+  async generateShareCode(id: number, userId: number) {
     const project = await this.prisma.project.findFirst({
       where: {
-        id: projectId,
+        id,
         ownerId: userId,
       },
     });
 
     if (!project) {
-      throw new NotFoundException(`Project with ID ${projectId} not found or you're not the owner`);
+      throw new Error('Project not found');
     }
 
-    // Генерируем новый код, если его нет или если владелец хочет обновить
-    const shareCode = this.generateShareCode();
-    return this.prisma.project.update({
-      where: { id: projectId },
-      data: { shareCode },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            username: true,
-          },
-        },
-      },
-    });
+    if (!project.shareCode) {
+      const shareCode = randomBytes(4).toString('hex');
+      await this.prisma.project.update({
+        where: { id },
+        data: { shareCode },
+      });
+      return { shareCode };
+    }
+
+    return { shareCode: project.shareCode };
   }
 
-  async getProjectByShareCode(shareCode: string) {
+  async joinProject(shareCode: string, userId: number) {
     const project = await this.prisma.project.findUnique({
       where: { shareCode },
       include: {
-        owner: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            username: true,
-          },
-        },
-        tasks: {
-          include: {
-            category: true,
-          },
-        },
+        shares: true,
       },
     });
 
     if (!project) {
-      throw new NotFoundException('Project not found');
+      throw new Error('Project not found');
     }
 
-    return project;
-  }
-
-  async joinProject(userId: number, shareCode: string) {
-    // Find project by share code
-    const project = await this.prisma.project.findUnique({
-      where: { shareCode },
-      include: {
-        sharedWith: true,
-        owner: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            username: true,
-          },
-        },
-      },
-    });
-
-    if (!project) {
-      throw new NotFoundException('Invalid share code or project not found');
-    }
-
-    // Check if user is the owner
     if (project.ownerId === userId) {
-      throw new BadRequestException('You cannot join your own project');
+      throw new Error('You are already the owner of this project');
     }
 
-    // Check if user is already in sharedWith
-    const isAlreadyShared = project.sharedWith.some(share => share.userId === userId);
-    if (isAlreadyShared) {
-      throw new BadRequestException('You are already a member of this project');
+    if (project.shares.some(share => share.userId === userId)) {
+      throw new Error('You have already joined this project');
     }
 
-    // Add user to sharedWith
-    return this.prisma.projectShare.create({
+    await this.prisma.projectShare.create({
       data: {
         projectId: project.id,
-        userId: userId,
+        userId,
       },
+    });
+
+    return this.prisma.project.findUnique({
+      where: { id: project.id },
       include: {
-        project: {
-          include: {
-            tasks: {
-              include: {
-                category: true,
-              },
-            },
-            owner: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                username: true,
-              },
-            },
-          },
-        },
+        tasks: true,
+        shares: true,
+      },
+    });
+  }
+
+  async getProjectByShareCode(code: string) {
+    return this.prisma.project.findUnique({
+      where: { shareCode: code },
+      include: {
+        tasks: true,
+        shares: true,
       },
     });
   }

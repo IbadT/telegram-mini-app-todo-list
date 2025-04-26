@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,68 +11,64 @@ datasource db {
 }
 
 model User {
-  id         Int            @id @default(autoincrement())
-  telegramId Int            @unique
-  username   String?
-  firstName  String
-  lastName   String?
-  projects   Project[]      @relation("OwnedProjects")
+  id        Int      @id @default(autoincrement())
+  telegramId String  @unique
+  username  String?
+  firstName String?
+  lastName  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  projects  Project[] @relation("ProjectOwner")
   sharedProjects ProjectShare[]
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
-  @@map("users")
 }
 
 model Project {
-  id          Int            @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   name        String
   description String?
-  tasks       Task[]
-  owner       User           @relation("OwnedProjects", fields: [ownerId], references: [id])
+  shareCode   String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   ownerId     Int
-  shareCode   String?        @unique
-  sharedWith  ProjectShare[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  @@map("projects")
+  owner       User     @relation("ProjectOwner", fields: [ownerId], references: [id])
+  tasks       Task[]
+  shares      ProjectShare[]
+  categories  Category[]
 }
 
 model ProjectShare {
   id        Int      @id @default(autoincrement())
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
+  project   Project  @relation(fields: [projectId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@unique([projectId, userId])
-  @@map("project_shares")
 }
 
 model Task {
-  id          Int       @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   title       String
   description String?
-  completed   Boolean   @default(false)
-  priority    Priority  @default(MEDIUM)
-  dueDate     DateTime?
-  category    Category  @relation(fields: [categoryId], references: [id])
-  categoryId  Int
-  project     Project   @relation(fields: [projectId], references: [id])
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   projectId   Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  @@map("tasks")
+  project     Project  @relation(fields: [projectId], references: [id])
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id])
 }
 
 model Category {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
-  color       String    @default("#808080")
-  tasks       Task[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String
+  color     String
+  projectId Int
+  project   Project  @relation(fields: [projectId], references: [id])
+  tasks     Task[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   @@map("categories")
 }
 
