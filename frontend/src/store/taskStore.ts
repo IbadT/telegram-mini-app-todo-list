@@ -98,6 +98,9 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         tasks: state.tasks.map((t) => (t.id === taskId ? response.data : t))
       }));
       useProjectStore.getState().updateProjectTasks(projectId, get().tasks.map((t) => (t.id === taskId ? response.data : t)));
+
+      // Перезагружаем задачи с сервера для синхронизации
+      await get().fetchTasks(projectId);
     } catch (error) {
       // В случае ошибки возвращаем предыдущее состояние
       const task = get().tasks.find((t) => t.id === taskId);
