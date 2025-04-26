@@ -78,21 +78,35 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
   toggleTaskCompletion: async (projectId: number, taskId: number) => {
     try {
-      set({ isLoading: true, error: null });
       const task = get().tasks.find((t) => t.id === taskId);
       if (!task) throw new Error('Task not found');
 
+      // Оптимистичное обновление UI
+      const updatedTask = { ...task, completed: !task.completed };
+      set((state) => ({
+        tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t))
+      }));
+      useProjectStore.getState().updateProjectTasks(projectId, get().tasks.map((t) => (t.id === taskId ? updatedTask : t)));
+
+      // Отправка запроса на сервер
       const response = await api.put<Task>(`/projects/${projectId}/tasks/${taskId}`, {
         completed: !task.completed
       });
 
-      const updatedTasks = get().tasks.map((t) => (t.id === taskId ? response.data : t));
-      set({ tasks: updatedTasks, isLoading: false });
-      
-      // Обновляем состояние проекта с новыми задачами
-      useProjectStore.getState().updateProjectTasks(projectId, updatedTasks);
+      // Обновление состояния после ответа сервера
+      set((state) => ({
+        tasks: state.tasks.map((t) => (t.id === taskId ? response.data : t))
+      }));
+      useProjectStore.getState().updateProjectTasks(projectId, get().tasks.map((t) => (t.id === taskId ? response.data : t)));
     } catch (error) {
-      set({ error: 'Failed to toggle task completion', isLoading: false });
+      // В случае ошибки возвращаем предыдущее состояние
+      const task = get().tasks.find((t) => t.id === taskId);
+      if (task) {
+        set((state) => ({
+          tasks: state.tasks.map((t) => (t.id === taskId ? task : t))
+        }));
+        useProjectStore.getState().updateProjectTasks(projectId, get().tasks.map((t) => (t.id === taskId ? task : t)));
+      }
       throw error;
     }
   }

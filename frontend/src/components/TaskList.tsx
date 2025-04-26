@@ -11,6 +11,11 @@ const TaskList = ({ tasks }: TaskListProps) => {
   const { toggleTaskCompletion, deleteTask } = useTaskStore();
   const { currentProject } = useProjectStore();
 
+  const handleTaskToggle = async (taskId: number) => {
+    if (!currentProject) return;
+    await toggleTaskCompletion(currentProject.id, taskId);
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'HIGH':
@@ -36,7 +41,10 @@ const TaskList = ({ tasks }: TaskListProps) => {
               <input
                 type="checkbox"
                 checked={task.completed}
-                onChange={() => currentProject && toggleTaskCompletion(currentProject.id, task.id)}
+                onChange={(e) => {
+                  e.preventDefault();
+                  handleTaskToggle(task.id);
+                }}
                 className="mt-1 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 hover:cursor-pointer transition-all duration-200"
               />
               <div>
