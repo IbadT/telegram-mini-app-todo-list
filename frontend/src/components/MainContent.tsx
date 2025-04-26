@@ -8,6 +8,7 @@ import { AddTaskModal } from './AddTaskModal';
 import { AddCategoryModal } from './AddCategoryModal';
 import { JoinProjectModal } from './JoinProjectModal';
 
+
 const MainContent = () => {
   const { projects, currentProject, fetchProjects, isLoading: isProjectsLoading } = useProjectStore();
   const { tasks, fetchTasks, isLoading: isTasksLoading } = useTaskStore();
