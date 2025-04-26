@@ -12,6 +12,7 @@ import { AddCategoryModal } from './components/AddCategoryModal';
 import { JoinProjectModal } from './components/JoinProjectModal';
 import SharedProjectPage from './pages/SharedProjectPage';
 import MainContent from './components/MainContent';
+import LaunchButton from './components/LaunchButton/LaunchButton';
 
 function App() {
   const { projects, currentProject, fetchProjects } = useProjectStore();
@@ -50,6 +51,9 @@ function App() {
 
   return (
     <Router>
+      <div className="fixed top-4 right-4 z-50">
+        <LaunchButton />
+      </div>
       <Routes>
         <Route path="/" element={<MainContent />} />
         <Route path="/projects/share/:code" element={<SharedProjectPage />} />

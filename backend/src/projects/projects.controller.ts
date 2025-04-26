@@ -7,13 +7,14 @@ import {
   Param,
   Delete,
   Req,
+  Res,
   // UseGuards,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { ShareProjectDto } from './dto/share-project.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 @ApiTags('projects')
 @ApiBearerAuth()
@@ -22,6 +23,61 @@ import { Request } from 'express';
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
+
+  @Get('launch')
+  launchMiniApp(@Res() res: Response) {
+    const miniAppUrl = 'https://t.me/MiniAppTodoListBot/todoapp?startapp=ref_' + Date.now();
+    
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Todo App Launcher</title>
+        <meta property="og:title" content="Todo Mini App">
+        <meta property="og:description" content="Launch your Todo Mini App">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://telegram.org/js/telegram-web-app.js"></script>
+        <style>
+          body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+          }
+          .launch-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #0088cc, #00aced);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.3);
+            transition: all 0.3s ease;
+          }
+          .launch-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 136, 204, 0.4);
+          }
+        </style>
+      </head>
+      <body>
+        <a href="${miniAppUrl}" class="launch-btn">🚀 Launch Todo App</a>
+        <script>
+          // Если открыто в Telegram, сразу запускаем Mini App
+          if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.openTelegramLink('${miniAppUrl}');
+          }
+        </script>
+      </body>
+      </html>
+    `);
+  }
+
+  
   @Post()
   @ApiOperation({ summary: 'Create a new project' })
   @ApiResponse({ status: 201, description: 'Project created successfully.' })

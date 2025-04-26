@@ -1,0 +1,30 @@
+.launch-button {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #0088cc, #00aced);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 136, 204, 0.25);
+  margin: 10px;
+}
+
+.launch-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 136, 204, 0.35);
+}
+
+@media (max-width: 768px) {
+  .launch-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    padding: 0;
+  }
+}
