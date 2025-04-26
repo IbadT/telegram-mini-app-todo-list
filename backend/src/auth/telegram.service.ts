@@ -18,13 +18,13 @@ export class TelegramService {
     const { id: telegramId } = telegramData;
     
     let user = await this.prisma.user.findUnique({
-      where: { telegramId }
+      where: { telegramId: telegramId.toString() }
     });
     
     if (!user) {
       user = await this.prisma.user.create({
         data: {
-          telegramId,
+          telegramId: telegramId.toString(),
           username: telegramData.username || `user_${telegramId}`,
           firstName: telegramData.first_name || 'User',
           lastName: telegramData.last_name || '',
@@ -33,5 +33,18 @@ export class TelegramService {
     }
     
     return user;
+  }
+
+  async findOrCreateUser(telegramData: any) {
+    const user = await this.prisma.user.upsert({
+      where: { telegramId: telegramData.id.toString() },
+      update: {},
+      create: {
+        telegramId: telegramData.id.toString(),
+        username: telegramData.username,
+        firstName: telegramData.first_name,
+        lastName: telegramData.last_name,
+      },
+    });
   }
 } 

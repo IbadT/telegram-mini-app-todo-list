@@ -1,14 +1,14 @@
-import { PrismaClient, Priority } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
   // Create default user
   const defaultUser = await prisma.user.upsert({
-    where: { telegramId: 1 },
+    where: { telegramId: '1' },
     update: {},
     create: {
-      telegramId: 1,
+      telegramId: '1',
       firstName: 'Default',
       lastName: 'User',
       username: 'default_user',
@@ -51,10 +51,15 @@ async function main() {
 
   const createdCategories: { id: number }[] = [];
   for (const category of defaultCategories) {
-    const createdCategory = await prisma.category.upsert({
-      where: { name: category.name },
-      update: {},
-      create: category,
+    const createdCategory = await prisma.category.create({
+      data: {
+        ...category,
+        project: {
+          connect: {
+            id: defaultProject.id,
+          },
+        },
+      },
     });
     createdCategories.push(createdCategory);
   }
@@ -66,36 +71,36 @@ async function main() {
     {
       title: 'Завершить проект',
       description: 'Доделать все задачи по текущему проекту',
-      priority: Priority.HIGH,
-      categoryId: createdCategories[0].id, // Работа
+      priority: 'HIGH',
+      categoryId: createdCategories[0].id,
       projectId: defaultProject.id,
     },
     {
       title: 'Подготовиться к экзамену',
       description: 'Повторить материалы за последний месяц',
-      priority: Priority.MEDIUM,
-      categoryId: createdCategories[1].id, // Учеба
+      priority: 'MEDIUM',
+      categoryId: createdCategories[1].id,
       projectId: defaultProject.id,
     },
     {
       title: 'Сходить в магазин',
       description: 'Купить продукты на неделю',
-      priority: Priority.LOW,
-      categoryId: createdCategories[2].id, // Личное
+      priority: 'LOW',
+      categoryId: createdCategories[2].id,
       projectId: defaultProject.id,
     },
     {
       title: 'Пойти в спортзал',
       description: 'Тренировка по программе',
-      priority: Priority.MEDIUM,
-      categoryId: createdCategories[3].id, // Здоровье
+      priority: 'MEDIUM',
+      categoryId: createdCategories[3].id,
       projectId: defaultProject.id,
     },
     {
       title: 'Убраться в квартире',
       description: 'Генеральная уборка',
-      priority: Priority.LOW,
-      categoryId: createdCategories[4].id, // Дом
+      priority: 'LOW',
+      categoryId: createdCategories[4].id,
       projectId: defaultProject.id,
     },
   ];
@@ -113,10 +118,10 @@ async function main() {
     where: { id: 1 },
     update: {},
     create: {
-      telegramId: 123456789,
+      telegramId: '123456789',
+      username: 'testuser',
       firstName: 'Test',
       lastName: 'User',
-      username: 'testuser',
     },
   });
 
