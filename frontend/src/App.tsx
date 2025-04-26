@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { useProjectStore } from './store/projectStore';
 import { useTaskStore } from './store/taskStore';
 import { useAuthStore } from './store/authStore';
@@ -20,13 +20,20 @@ function App() {
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
   const [isJoinProjectModalOpen, setIsJoinProjectModalOpen] = useState(false);
-  const setUser = useAuthStore((state) => state.setUser);
+  const { checkAuth, user, setUser } = useAuthStore();
+  const navigate = useNavigate();
 
   console.log({ projects, tasks });
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    checkAuth();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    if (user) {
+      fetchProjects();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (currentProject?.id) {
@@ -37,16 +44,28 @@ function App() {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const response = await axios.get('/auth/me');
-        setUser(response.data);
+        // @ts-ignore
+        const telegramData = window.Telegram.WebApp.initData;
+        if (telegramData) {
+          const response = await axios.post('/auth/telegram', {
+            initData: telegramData
+          });
+          setUser(response.data.user);
+        } else {
+          navigate('/auth');
+        }
       } catch (error) {
         console.error('Failed to initialize auth:', error);
-        setUser(null);
+        navigate('/auth');
       }
     };
 
     initializeAuth();
-  }, [setUser]);
+  }, [navigate]);
+
+  if (!user) {
+    return null; // or a loading spinner
+  }
 
   return (
     <Router>

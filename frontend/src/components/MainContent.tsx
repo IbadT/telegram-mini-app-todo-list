@@ -7,6 +7,7 @@ import AddProjectModal from './AddProjectModal';
 import { AddTaskModal } from './AddTaskModal';
 import { AddCategoryModal } from './AddCategoryModal';
 import { JoinProjectModal } from './JoinProjectModal';
+import AuthModal from './AuthModal';
 
 
 const MainContent = () => {
@@ -16,6 +17,7 @@ const MainContent = () => {
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
   const [isJoinProjectModalOpen, setIsJoinProjectModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   console.log({ projects, tasks });
 
@@ -36,6 +38,12 @@ const MainContent = () => {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Projects</h1>
             <div className="space-x-2">
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+              >
+                Login/Register
+              </button>
               <button
                 onClick={() => setIsJoinProjectModalOpen(true)}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
@@ -95,6 +103,19 @@ const MainContent = () => {
                           </div>
                         </div>
                         <div className="flex space-x-2">
+                          <button
+                            onClick={() => useProjectStore.getState().shareProject(project.id)}
+                            className="text-gray-400 hover:text-blue-500 hover:cursor-pointer transition-all duration-200"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                            </svg>
+                          </button>
                           <button
                             onClick={() => useProjectStore.getState().deleteProject(project.id)}
                             className="text-gray-400 hover:text-red-500 hover:cursor-pointer transition-all duration-200"
@@ -188,6 +209,11 @@ const MainContent = () => {
             console.error('Failed to join project:', error);
           }
         }}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
       />
     </div>
   );

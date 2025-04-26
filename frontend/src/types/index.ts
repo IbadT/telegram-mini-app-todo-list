@@ -4,6 +4,7 @@ export interface Category {
   id: number;
   name: string;
   color: string;
+  projectId: number;
 }
 
 export interface CreateTaskDto {
@@ -25,13 +26,39 @@ export interface Task {
   category: Category;
   createdAt: string;
   updatedAt: string;
+  projectId: number;
 }
 
 export interface Project {
   id: number;
   name: string;
   description?: string;
+  userId: number;
+  tasks?: Task[];
+  shareCode?: string;
   createdAt: string;
   updatedAt: string;
-  tasks: Task[];
+}
+
+export interface User {
+  id: number;
+  email: string;
+  telegramId?: number;
+}
+
+export interface CreateProjectDto {
+  name: string;
+  description?: string;
+}
+
+export interface UpdateProjectDto {
+  name?: string;
+  description?: string;
+}
+
+export interface UpdateTaskDto {
+  title?: string;
+  description?: string;
+  completed?: boolean;
+  categoryId?: number;
 } 
