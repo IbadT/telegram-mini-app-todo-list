@@ -12,8 +12,9 @@ import { AddCategoryModal } from './components/AddCategoryModal';
 import { JoinProjectModal } from './components/JoinProjectModal';
 import SharedProjectPage from './pages/SharedProjectPage';
 import MainContent from './components/MainContent';
+import AuthPage from './pages/AuthPage';
 
-function App() {
+function AppContent() {
   const { projects, currentProject, fetchProjects } = useProjectStore();
   const { tasks, fetchTasks } = useTaskStore();
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
@@ -97,6 +98,17 @@ function App() {
           />
         </>
       )}
+    </Router>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/*" element={<AppContent />} />
+      </Routes>
     </Router>
   );
 }
