@@ -70,6 +70,7 @@ function App() {
           <AddTaskModal
             isOpen={isAddTaskModalOpen}
             onClose={() => setIsAddTaskModalOpen(false)}
+            currentProject={currentProject}
           />
           <AddCategoryModal
             isOpen={isAddCategoryModalOpen}

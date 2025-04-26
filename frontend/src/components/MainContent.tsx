@@ -96,6 +96,7 @@ const MainContent = () => {
       <AddTaskModal
         isOpen={isAddTaskModalOpen}
         onClose={() => setIsAddTaskModalOpen(false)}
+        currentProject={currentProject}
       />
 
       <AddCategoryModal

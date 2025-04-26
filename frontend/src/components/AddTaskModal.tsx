@@ -8,7 +8,7 @@ import { useCategoryStore } from '../store/categoryStore';
 interface AddTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentProject?: Project;
+  currentProject: Project | null;
 }
 
 export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, currentProject }) => {
@@ -26,6 +26,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, cur
 
   const onSubmit = async (data: CreateTaskDto) => {
     try {
+      console.log('Current project:', currentProject);
       if (!currentProject?.id) {
         setError('No project selected');
         return;

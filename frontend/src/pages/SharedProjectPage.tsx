@@ -12,7 +12,7 @@ import { useAuthStore } from '../store/authStore';
 const SharedProjectPage = () => {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
-  const { projects, joinProject, deleteProject } = useProjectStore();
+  const { projects, joinProject, deleteProject, setCurrentProject } = useProjectStore();
   const { tasks, fetchTasks, toggleTaskCompletion, deleteTask } = useTaskStore();
   const { user } = useAuthStore();
   const [project, setProject] = useState<Project | null>(null);
@@ -42,16 +42,12 @@ const SharedProjectPage = () => {
     const fetchProject = async () => {
       try {
         const response = await axios.get(`/projects/share/${code}`);
-        const projectData = response.data;
-        setProject(projectData);
-        
-        if (projectData.id) {
-          await fetchTasks(projectData.id);
-        }
-      } catch (err) {
-        console.error('Error fetching project:', err);
+        setProject(response.data);
+        setCurrentProject(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch project:', error);
         setError('Failed to load project');
-      } finally {
         setLoading(false);
       }
     };
@@ -59,7 +55,13 @@ const SharedProjectPage = () => {
     if (code) {
       fetchProject();
     }
-  }, [code, fetchTasks]);
+  }, [code, setCurrentProject]);
+
+  useEffect(() => {
+    if (project?.id) {
+      fetchTasks(project.id);
+    }
+  }, [project?.id, fetchTasks]);
 
   const handleDeleteProject = async () => {
     if (!project) return;

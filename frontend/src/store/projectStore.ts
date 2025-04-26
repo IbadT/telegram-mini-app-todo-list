@@ -15,7 +15,7 @@ interface ProjectStore {
   deleteProject: (id: number) => Promise<void>;
   updateProjectTasks: (projectId: number, tasks: Task[]) => void;
   shareProject: (projectId: number) => Promise<string>;
-  joinProject: (shareCode: string) => Promise<void>;
+  joinProject: (code: string) => Promise<void>;
 }
 
 export const useProjectStore = create<ProjectStore>((set) => ({
@@ -140,40 +140,16 @@ export const useProjectStore = create<ProjectStore>((set) => ({
     }
   },
 
-  joinProject: async (shareCode: string) => {
-    set({ isLoading: true, error: null });
+  joinProject: async (code: string) => {
     try {
-      const response = await axios.post('/projects/join', { shareCode });
-      console.log('Joined project response:', response.data);
-      
-      // Обновляем список проектов
-      set((state) => {
-        const newProject = response.data.project;
-        const isProjectExists = state.projects.some(p => p.id === newProject.id);
-        
-        if (!isProjectExists) {
-          return {
-            projects: [...state.projects, newProject],
-            isLoading: false,
-          };
-        }
-        
-        return {
-          projects: state.projects.map(p => 
-            p.id === newProject.id ? newProject : p
-          ),
-          isLoading: false,
-        };
-      });
+      set({ isLoading: true, error: null });
+      const response = await axios.post(`/projects/join/${code}`);
+      set((state) => ({
+        projects: [...state.projects, response.data],
+        isLoading: false
+      }));
+      return response.data;
     } catch (error) {
-      console.error('Error joining project:', error);
-      if (error instanceof AxiosError) {
-        console.error('Error details:', {
-          status: error.response?.status,
-          data: error.response?.data,
-          message: error.message,
-        });
-      }
       set({ error: 'Failed to join project', isLoading: false });
       throw error;
     }
