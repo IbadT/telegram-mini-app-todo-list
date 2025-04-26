@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useProjectStore } from '../store/projectStore';
 import { useTaskStore } from '../store/taskStore';
-import ProjectList from './ProjectList';
+// import ProjectList from './ProjectList';
 import TaskList from './TaskList';
 import AddProjectModal from './AddProjectModal';
 import { AddTaskModal } from './AddTaskModal';
