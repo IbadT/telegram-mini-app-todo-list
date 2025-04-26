@@ -26,7 +26,6 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, cur
 
   const onSubmit = async (data: CreateTaskDto) => {
     try {
-      console.log('Current project:', currentProject);
       if (!currentProject?.id) {
         setError('No project selected');
         return;
@@ -45,6 +44,15 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, cur
       setError('Failed to add task. Please try again.');
     }
   };
+
+  // Add Telegram Mini App initialization
+  useEffect(() => {
+    if (window.Telegram?.WebApp?.initData) {
+      const initData = window.Telegram.WebApp.initData;
+      // You can use this data for authentication or other purposes
+      console.log('Telegram init data:', initData);
+    }
+  }, []);
 
   const priorityOptions: Priority[] = ['LOW' as Priority, 'MEDIUM' as Priority, 'HIGH' as Priority];
 

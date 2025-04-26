@@ -9,8 +9,8 @@ import { AddCategoryModal } from './AddCategoryModal';
 import { JoinProjectModal } from './JoinProjectModal';
 
 const MainContent = () => {
-  const { projects, currentProject, fetchProjects } = useProjectStore();
-  const { tasks, fetchTasks } = useTaskStore();
+  const { projects, currentProject, fetchProjects, isLoading: isProjectsLoading } = useProjectStore();
+  const { tasks, fetchTasks, isLoading: isTasksLoading } = useTaskStore();
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
@@ -34,6 +34,7 @@ const MainContent = () => {
         <div className="px-4 sm:px-0">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Projects</h1>
+            {/* добавить skeleton */}
             <div className="space-x-2">
               <button
                 onClick={() => setIsJoinProjectModalOpen(true)}
@@ -51,7 +52,18 @@ const MainContent = () => {
           </div>
 
           <div className="mt-6">
-            <ProjectList />
+            {isProjectsLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 animate-pulse">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <ProjectList />
+            )}
           </div>
 
           {currentProject ? (
@@ -77,7 +89,18 @@ const MainContent = () => {
               </div>
 
               <div className="mt-4">
-                <TaskList tasks={tasks} />
+                {isTasksLoading ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 animate-pulse">
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <TaskList tasks={tasks} />
+                )}
               </div>
             </div>
           ) : (
