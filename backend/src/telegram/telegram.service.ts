@@ -7,7 +7,7 @@ export class TelegramService {
   private bot: Telegraf;
 
   constructor(private configService: ConfigService) {
-    this.bot = new Telegraf(this.configService.get('TELEGRAM_BOT_TOKEN'));
+    this.bot = new Telegraf(this.configService.get('TELEGRAM_BOT_TOKEN') || '');
   }
 
   async sendMiniAppButton(chatId: number) {
@@ -16,7 +16,7 @@ export class TelegramService {
         inline_keyboard: [[
           {
             text: 'Open Task Manager',
-            web_app: { url: this.configService.get('MINI_APP_URL') }
+            web_app: { url: this.configService.get('MINI_APP_URL') || '' }
           }
         ]]
       }
