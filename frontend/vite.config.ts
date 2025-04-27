@@ -14,8 +14,8 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        // target: 'https://telegram-mini-app-todo-list.onrender.com',
-        target: 'http://localhost:3000',
+        target: 'https://telegram-mini-app-todo-list.onrender.com',
+        // target: 'http://localhost:3000',
         changeOrigin: true,
         secure: true,
         ws: true,
