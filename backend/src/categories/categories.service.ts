@@ -7,16 +7,29 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 export class CategoriesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createCategoryDto: CreateCategoryDto, projectId: number) {
+  async create(createCategoryDto: CreateCategoryDto, userId: number) {
+    // Проверяем, что проект существует и принадлежит пользователю
+    const project = await this.prisma.project.findFirst({
+      where: {
+        id: createCategoryDto.projectId,
+        OR: [
+          { ownerId: userId },
+          { shares: { some: { userId } } }
+        ]
+      }
+    });
+    if (!project) {
+      throw new NotFoundException('Project not found or not accessible');
+    }
+
     return this.prisma.category.create({
       data: {
-        ...createCategoryDto,
+        name: createCategoryDto.name,
+        color: createCategoryDto.color,
         project: {
-          connect: {
-            id: projectId,
-          },
-        },
-      },
+          connect: { id: createCategoryDto.projectId }
+        }
+      }
     });
   }
 
