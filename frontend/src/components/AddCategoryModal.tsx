@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { useForm, useWatch } from 'react-hook-form';
-import { CreateCategoryDto, Project } from '../types';
+import { CreateCategoryDto } from '../types';
 import { useCategoryStore } from '../store/categoryStore';
 
 interface AddCategoryModalProps {

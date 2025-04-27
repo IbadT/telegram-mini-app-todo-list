@@ -14,7 +14,7 @@ interface TaskStore {
   toggleTaskCompletion: (projectId: number, taskId: number) => Promise<void>;
 }
 
-export const useTaskStore = create<TaskStore>((set, get) => ({
+export const useTaskStore = create<TaskStore>((set, _) => ({
   tasks: [],
   isLoading: false,
   error: null,

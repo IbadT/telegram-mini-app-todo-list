@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { useForm } from 'react-hook-form';
-import { CreateTaskDto, Priority, Project } from '../types';
+import { CreateTaskDto, Priority } from '../types';
 import { useTaskStore } from '../store/taskStore';
 import { useCategoryStore } from '../store/categoryStore';
 
