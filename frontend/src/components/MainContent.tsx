@@ -43,7 +43,7 @@ const MainContent = () => {
     }
   };
 
-  const selectedProject = projects.find(p => p.id === currentProject?.id);
+  // const selectedProject = projects.find(p => p.id === currentProject?.id);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
