@@ -33,7 +33,7 @@ export class TasksService {
     const data = {
       ...createTaskDto,
       projectId,
-      dueDate: createTaskDto.dueDate ? new Date(createTaskDto.dueDate).toISOString() : null,
+      dueDate: createTaskDto.dueDate ? new Date(createTaskDto.dueDate) : null,
     };
 
     return this.prisma.task.create({

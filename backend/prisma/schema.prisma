@@ -12,10 +12,12 @@ datasource db {
 
 model User {
   id        Int      @id @default(autoincrement())
-  telegramId String  @unique
+  telegramId String?  @unique
   username  String?
   firstName String?
   lastName  String?
+  email     String?  @unique
+  password  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   projects  Project[] @relation("ProjectOwner")
@@ -31,7 +33,7 @@ model Project {
   updatedAt   DateTime @updatedAt
   ownerId     Int
   owner       User     @relation("ProjectOwner", fields: [ownerId], references: [id])
-  tasks       Task[]
+  tasks       Task[]  
   shares      ProjectShare[]
   categories  Category[]
 }
@@ -51,11 +53,13 @@ model Task {
   id          Int      @id @default(autoincrement())
   title       String
   description String?
-  completed   Boolean  @default(false)
+  completed   Boolean?  @default(false)
+  priority    Priority @default(MEDIUM)
+  dueDate     DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   projectId   Int
-  project     Project  @relation(fields: [projectId], references: [id])
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   categoryId  Int?
   category    Category? @relation(fields: [categoryId], references: [id])
 }

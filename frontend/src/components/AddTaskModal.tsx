@@ -24,6 +24,8 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, cur
     }
   }, [isOpen, fetchCategories]);
 
+  const priorityOptions: Priority[] = [Priority.LOW, Priority.MEDIUM, Priority.HIGH];
+
   const onSubmit = async (data: CreateTaskDto) => {
     try {
       if (!currentProject?.id) {
@@ -34,6 +36,11 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, cur
       if (!categories.length) {
         setError('No categories available');
         return;
+      }
+
+      if (!data.priority) data.priority = Priority.MEDIUM;
+      if ((!data.categoryId || isNaN(Number(data.categoryId))) && categories.length > 0) {
+        data.categoryId = categories[0].id;
       }
 
       await addTask(currentProject.id, data);
@@ -53,8 +60,6 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, cur
       console.log('Telegram init data:', initData);
     }
   }, []);
-
-  const priorityOptions: Priority[] = ['LOW' as Priority, 'MEDIUM' as Priority, 'HIGH' as Priority];
 
   return (
     <Transition show={isOpen} as={React.Fragment}>

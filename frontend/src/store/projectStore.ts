@@ -15,10 +15,10 @@ interface ProjectStore {
   deleteProject: (id: number) => Promise<void>;
   updateProjectTasks: (projectId: number, tasks: Task[]) => void;
   shareProject: (projectId: number) => Promise<string>;
-  joinProject: (code: string) => Promise<void>;
+  joinProject: (shareCode: string) => Promise<{ message: string; projectId: number }>;
 }
 
-export const useProjectStore = create<ProjectStore>((set, _) => ({
+export const useProjectStore = create<ProjectStore>((set, get) => ({
   projects: [],
   currentProject: null,
   isLoading: false,
@@ -26,11 +26,17 @@ export const useProjectStore = create<ProjectStore>((set, _) => ({
 
   fetchProjects: async () => {
     const user = useAuthStore.getState().user;
-    if (!user) return;
+    console.log({ user });
+    
+    if (!user?.id) return;
 
     set({ isLoading: true, error: null });
     try {
-      const response = await api.get(`/users/${user.id}/projects`);
+      // const response = await api.get(`/users/${user.id}/projects`);
+      // const response = await api.get(`/projects/${user.id}`);
+      const response = await api.get(`/projects`);
+      console.log({ response });
+      
       set({ projects: response.data, isLoading: false });
     } catch (error) {
       set({ error: 'Failed to fetch projects', isLoading: false });
@@ -40,6 +46,8 @@ export const useProjectStore = create<ProjectStore>((set, _) => ({
 
   addProject: async (project: CreateProjectDto) => {
     const user = useAuthStore.getState().user;
+    console.log({ user });
+    
     if (!user) throw new Error('User not authenticated');
 
     set({ isLoading: true, error: null });
@@ -111,29 +119,13 @@ export const useProjectStore = create<ProjectStore>((set, _) => ({
   },
 
   shareProject: async (projectId: number) => {
-    try {
-      const response = await api.post(`/projects/${projectId}/share`);
-      return response.data.shareCode;
-    } catch (error) {
-      console.error('Failed to share project:', error);
-      throw error;
-    }
+    const response = await api.post<{ shareCode: string }>(`/projects/${projectId}/share`);
+    return response.data.shareCode;
   },
 
-  joinProject: async (code: string) => {
-    const user = useAuthStore.getState().user;
-    if (!user) throw new Error('User not authenticated');
-
-    try {
-      set({ isLoading: true, error: null });
-      const response = await api.post('/projects/join', { code });
-      set((state) => ({
-        projects: [...state.projects, response.data],
-        isLoading: false
-      }));
-    } catch (error) {
-      set({ error: 'Failed to join project', isLoading: false });
-      throw error;
-    }
+  joinProject: async (shareCode: string) => {
+    const response = await api.post<{ message: string; projectId: number }>(`/projects/join/${shareCode}`);
+    await get().fetchProjects();
+    return response.data;
   },
 })); 

@@ -72,7 +72,7 @@ const TaskList = ({ tasks }: TaskListProps) => {
                   </span>
                   {task.dueDate && (
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                      Due {format(new Date(task.dueDate), 'MMM d, yyyy')}
+                      Выполнить до: {format(new Date(task.dueDate), 'MMM d, yyyy')}
                     </span>
                   )}
                   <span

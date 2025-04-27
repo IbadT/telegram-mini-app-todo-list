@@ -2,6 +2,9 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
+// import { hash, compare } from 'bcrypt';
+import { hash, compare } from 'bcryptjs';
+
 
 @Injectable()
 export class AuthService {
@@ -10,6 +13,58 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
+
+
+  async login(email: string, password: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (!user.password) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isPasswordValid = await compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const payload = { sub: user.id };
+    return {
+      access_token: this.jwtService.sign(payload),
+      user,
+    };
+  }
+
+
+  async register(email: string, password: string) {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      throw new UnauthorizedException('User already exists');
+    }
+    
+    const hashedPassword = await hash(password, 10);
+    const user = await this.prisma.user.create({
+      data: { 
+        email, 
+        password: hashedPassword,
+      },
+    });
+
+    const payload = { sub: user.id, email: user.email };
+    return {
+      access_token: this.jwtService.sign(payload),
+      user,
+    };
+  }
 
   async validateTelegramLogin(data: any) {
     try {
@@ -72,9 +127,9 @@ export class AuthService {
     }
   }
 
-  async me(userId: number) {
+  async getCurrentUser(email: string) {
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { email },
     });
 
     if (!user) {

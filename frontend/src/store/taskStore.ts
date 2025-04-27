@@ -34,7 +34,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   addTask: async (projectId: number, task: CreateTaskDto) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await api.post<Task>(`/projects/${projectId}/tasks`, task);
+      const response = await api.post<Task>(`/projects/${projectId}/tasks`, task); 
+      console.log({ response });
       set((state) => ({
         tasks: [...state.tasks, response.data],
         isLoading: false

@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useProjectStore } from '../store/projectStore';
 import { useTaskStore } from '../store/taskStore';
-// import ProjectList from './ProjectList';
 import TaskList from './TaskList';
 import AddProjectModal from './AddProjectModal';
 import { AddTaskModal } from './AddTaskModal';
 import { AddCategoryModal } from './AddCategoryModal';
 import { JoinProjectModal } from './JoinProjectModal';
 import AuthModal from './AuthModal';
+import ShareCodeModal from './ShareCodeModal';
 
 
 const MainContent = () => {
@@ -18,6 +18,8 @@ const MainContent = () => {
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
   const [isJoinProjectModalOpen, setIsJoinProjectModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isShareCodeModalOpen, setIsShareCodeModalOpen] = useState(false);
+  const [shareCode, setShareCode] = useState('');
 
   console.log({ projects, tasks });
 
@@ -31,30 +33,34 @@ const MainContent = () => {
     }
   }, [currentProject?.id, fetchTasks]);
 
+  const handleShareProject = async (projectId: number) => {
+    try {
+      const code = await useProjectStore.getState().shareProject(projectId);
+      setShareCode(code);
+      setIsShareCodeModalOpen(true);
+    } catch (e: any) {
+      alert(e.response?.data?.message || 'Ошибка при генерации кода');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 sm:px-0">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Projects</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Проекты</h1>
             <div className="space-x-2">
-              <button
-                onClick={() => setIsAuthModalOpen(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-              >
-                Login/Register
-              </button>
               <button
                 onClick={() => setIsJoinProjectModalOpen(true)}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               >
-                Join Project
+                Присоединиться к проекту
               </button>
               <button
                 onClick={() => setIsAddProjectModalOpen(true)}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Add Project
+                Создать проект
               </button>
             </div>
           </div>
@@ -95,16 +101,16 @@ const MainContent = () => {
                           )}
                           <div className="mt-2 flex flex-wrap gap-2">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                              {project.tasks?.length || 0} tasks
+                              Всего задач - ({project.tasks?.length || 0})
                             </span>
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                              {project.tasks?.filter((t) => t.completed).length || 0} completed
+                              Выполнено - ({project.tasks?.filter((t) => t.completed).length || 0})
                             </span>
                           </div>
                         </div>
                         <div className="flex space-x-2">
                           <button
-                            onClick={() => useProjectStore.getState().shareProject(project.id)}
+                            onClick={() => handleShareProject(project.id)}
                             className="text-gray-400 hover:text-blue-500 hover:cursor-pointer transition-all duration-200"
                           >
                             <svg
@@ -148,13 +154,13 @@ const MainContent = () => {
                               onClick={() => setIsAddCategoryModalOpen(true)}
                               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                             >
-                              Add Category
+                              Создать категорию
                             </button>
                             <button
                               onClick={() => setIsAddTaskModalOpen(true)}
                               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             >
-                              Add Task
+                              Создать задачу
                             </button>
                           </div>
                         </div>
@@ -188,6 +194,8 @@ const MainContent = () => {
         onClose={() => setIsAddProjectModalOpen(false)}
       />
 
+      
+
       <AddTaskModal
         isOpen={isAddTaskModalOpen}
         onClose={() => setIsAddTaskModalOpen(false)}
@@ -214,6 +222,12 @@ const MainContent = () => {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
+      />
+
+      <ShareCodeModal
+        isOpen={isShareCodeModalOpen}
+        onClose={() => setIsShareCodeModalOpen(false)}
+        shareCode={shareCode}
       />
     </div>
   );

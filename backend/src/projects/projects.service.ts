@@ -86,64 +86,42 @@ export class ProjectsService {
     });
   }
 
-  async generateShareCode(id: number, userId: number) {
-    const project = await this.prisma.project.findFirst({
-      where: {
-        id,
-        ownerId: userId,
-      },
+  async generateShareCode(projectId: number, userId: number) {
+    const project = await this.prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) throw new Error('Project not found');
+    if (project.ownerId !== userId) throw new Error('Not your project');
+
+    if (project.shareCode) return { shareCode: project.shareCode };
+
+    // Генерируем уникальный короткий код
+    let shareCode;
+    let isUnique = false;
+    while (!isUnique) {
+      shareCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const existing = await this.prisma.project.findUnique({ where: { shareCode } });
+      if (!existing) isUnique = true;
+    }
+    await this.prisma.project.update({
+      where: { id: projectId },
+      data: { shareCode },
     });
-
-    if (!project) {
-      throw new Error('Project not found');
-    }
-
-    if (!project.shareCode) {
-      const shareCode = randomBytes(4).toString('hex');
-      await this.prisma.project.update({
-        where: { id },
-        data: { shareCode },
-      });
-      return { shareCode };
-    }
-
-    return { shareCode: project.shareCode };
+    return { shareCode };
   }
 
   async joinProject(shareCode: string, userId: number) {
     const project = await this.prisma.project.findUnique({
       where: { shareCode },
-      include: {
-        shares: true,
-      },
+      include: { shares: true },
     });
-
-    if (!project) {
-      throw new Error('Project not found');
-    }
-
-    if (project.ownerId === userId) {
-      throw new Error('You are already the owner of this project');
-    }
-
-    if (project.shares.some(share => share.userId === userId)) {
-      throw new Error('You have already joined this project');
-    }
+    if (!project) throw new Error('Project not found');
+    if (project.ownerId === userId) throw new Error('You are the owner of this project');
+    if (project.shares.some(share => share.userId === userId)) throw new Error('You have already joined this project');
 
     await this.prisma.projectShare.create({
-      data: {
-        projectId: project.id,
-        userId,
-      },
+      data: { projectId: project.id, userId },
     });
 
-    return this.prisma.project.findUnique({
-      where: { id: project.id },
-      include: {
-        tasks: true,
-        shares: true,
-      },
-    });
+    return { message: 'Successfully joined the project', projectId: project.id };
   }
 
   async getProjectByShareCode(code: string) {

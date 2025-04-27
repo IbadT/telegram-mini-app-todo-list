@@ -6,18 +6,20 @@ import {
   Patch,
   Param,
   Delete,
-  // UseGuards,
-  // Request,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-// import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Request } from 'express';
 
 @ApiTags('tasks')
-@ApiBearerAuth()
-// @UseGuards(JwtAuthGuard)
+// @ApiBearerAuth()
+@ApiSecurity('JWT-auth')
+@UseGuards(JwtAuthGuard)
 @Controller('projects/:projectId/tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
@@ -28,15 +30,24 @@ export class TasksController {
   create(
     @Param('projectId') projectId: string,
     @Body() createTaskDto: CreateTaskDto,
+    @Req() req: Request,
   ) {
-    return this.tasksService.create(1, +projectId, createTaskDto); // Using default user ID for now
+    // @ts-ignore
+    const userId = req.user?.id;
+    console.log({ toCreate: {userId, projectId, createTaskDto} });
+    
+    return this.tasksService.create(userId, +projectId, createTaskDto);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all tasks' })
   @ApiResponse({ status: 200, description: 'Return all tasks.' })
-  findAll(@Param('projectId') projectId: string) {
-    return this.tasksService.findAll(1, +projectId); // Using default user ID for now
+  findAll(@Param('projectId') projectId: string, @Req() req: Request) {
+    // @ts-ignore
+    const userId = req.user?.id;
+    console.log({ userId, projectId });
+    
+    return this.tasksService.findAll(userId, +projectId);
   }
 
   @Get(':id')
@@ -46,8 +57,11 @@ export class TasksController {
   findOne(
     @Param('projectId') projectId: string,
     @Param('id') id: string,
+    @Req() req: Request,
   ) {
-    return this.tasksService.findOne(1, +projectId, +id); // Using default user ID for now
+    // @ts-ignore
+    const userId = req.user?.id;
+    return this.tasksService.findOne(userId, +projectId, +id);
   }
 
   @Patch(':id')
@@ -58,8 +72,11 @@ export class TasksController {
     @Param('projectId') projectId: string,
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
+    @Req() req: Request,
   ) {
-    return this.tasksService.update(1, +projectId, +id, updateTaskDto); // Using default user ID for now
+    // @ts-ignore
+    const userId = req.user?.id;
+    return this.tasksService.update(userId, +projectId, +id, updateTaskDto);
   }
 
   @Delete(':id')
@@ -69,7 +86,10 @@ export class TasksController {
   remove(
     @Param('projectId') projectId: string,
     @Param('id') id: string,
+    @Req() req: Request,
   ) {
-    return this.tasksService.remove(1, +projectId, +id); // Using default user ID for now
+    // @ts-ignore
+    const userId = req.user?.id;
+    return this.tasksService.remove(userId, +projectId, +id);
   }
 } 

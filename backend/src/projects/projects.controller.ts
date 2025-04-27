@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -23,7 +23,8 @@ interface RequestWithUser extends Request {
 }
 
 @ApiTags('projects')
-@ApiBearerAuth()
+// @ApiBearerAuth()
+@ApiSecurity('JWT-auth')
 @Controller('projects')
 @UseGuards(JwtAuthGuard)
 export class ProjectsController {
@@ -40,6 +41,8 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Get all projects' })
   @ApiResponse({ status: 200, description: 'Return all projects.' })
   findAll(@Req() req: RequestWithUser) {
+    console.log({ user: req.user.id });
+    
     return this.projectsService.findAll(req.user.id);
   }
 

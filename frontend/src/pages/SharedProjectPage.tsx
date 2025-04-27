@@ -161,7 +161,7 @@ const SharedProjectPage = () => {
                           )}
                           {task.dueDate && (
                             <span className="px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
-                              Due: {format(new Date(task.dueDate), 'MMM d, yyyy')}
+                              Выполнить до: {format(new Date(task.dueDate), 'MMM d, yyyy')}
                             </span>
                           )}
                         </div>

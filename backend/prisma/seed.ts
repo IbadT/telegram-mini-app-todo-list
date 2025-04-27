@@ -1,5 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 
+enum Priority {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+}
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -49,73 +55,75 @@ async function main() {
     },
   ];
 
-  const createdCategories: { id: number }[] = [];
-  for (const category of defaultCategories) {
-    const createdCategory = await prisma.category.create({
-      data: {
-        ...category,
-        project: {
-          connect: {
-            id: defaultProject.id,
+  const createdCategories = await Promise.all(
+    defaultCategories.map(category =>
+      prisma.category.create({
+        data: {
+          ...category,
+          project: {
+            connect: {
+              id: defaultProject.id,
+            },
           },
         },
-      },
-    });
-    createdCategories.push(createdCategory);
-  }
+      })
+    )
+  );
 
   console.log('Default categories have been seeded');
 
-  // Create test tasks
+  // Create test tasks with proper typing
   const defaultTasks = [
     {
       title: 'Завершить проект',
       description: 'Доделать все задачи по текущему проекту',
-      priority: 'HIGH',
-      categoryId: createdCategories[0].id,
-      projectId: defaultProject.id,
+      priority: Priority.HIGH,
+      category: { connect: { id: createdCategories[0].id } },
+      project: { connect: { id: defaultProject.id } },
     },
     {
       title: 'Подготовиться к экзамену',
       description: 'Повторить материалы за последний месяц',
-      priority: 'MEDIUM',
-      categoryId: createdCategories[1].id,
-      projectId: defaultProject.id,
+      priority: Priority.MEDIUM,
+      category: { connect: { id: createdCategories[1].id } },
+      project: { connect: { id: defaultProject.id } },
     },
     {
       title: 'Сходить в магазин',
       description: 'Купить продукты на неделю',
-      priority: 'LOW',
-      categoryId: createdCategories[2].id,
-      projectId: defaultProject.id,
+      priority: Priority.LOW,
+      category: { connect: { id: createdCategories[2].id } },
+      project: { connect: { id: defaultProject.id } },
     },
     {
       title: 'Пойти в спортзал',
       description: 'Тренировка по программе',
-      priority: 'MEDIUM',
-      categoryId: createdCategories[3].id,
-      projectId: defaultProject.id,
+      priority: Priority.MEDIUM,
+      category: { connect: { id: createdCategories[3].id } },
+      project: { connect: { id: defaultProject.id } },
     },
     {
       title: 'Убраться в квартире',
       description: 'Генеральная уборка',
-      priority: 'LOW',
-      categoryId: createdCategories[4].id,
-      projectId: defaultProject.id,
+      priority: Priority.LOW,
+      category: { connect: { id: createdCategories[4].id } },
+      project: { connect: { id: defaultProject.id } },
     },
   ];
 
-  for (const task of defaultTasks) {
-    await prisma.task.create({
-      data: task,
-    });
-  }
+  await Promise.all(
+    defaultTasks.map(task =>
+      prisma.task.create({
+        data: task,
+      })
+    )
+  );
 
   console.log('Default tasks have been seeded');
 
   // Create test user if not exists
   const testUser = await prisma.user.upsert({
-    where: { id: 1 },
+    where: { telegramId: '123456789' },
     update: {},
     create: {
       telegramId: '123456789',
@@ -135,4 +143,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-  }); 
+  });
