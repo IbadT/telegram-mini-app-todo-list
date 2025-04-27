@@ -44,16 +44,21 @@ export interface UpdateTaskDto {
 export interface Project {
   id: number;
   name: string;
-  description: string;
+  description?: string;
   shareCode: string;
   creatorId: number;
   creator: {
     id: number;
     username: string;
   };
-  tasks: Task[];
+  tasks?: Task[];
   categories: Category[];
   ownerId: number;
+  shares?: Array<{
+    id: number;
+    userId: number;
+    projectId: number;
+  }>;
   createdAt: string;
   updatedAt: string;
 }

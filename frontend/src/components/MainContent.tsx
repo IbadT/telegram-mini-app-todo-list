@@ -1,18 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useProjectStore } from '../store/projectStore';
 import { useTaskStore } from '../store/taskStore';
+import { useCategoryStore } from '../store/categoryStore';
+import { Project } from '../types';
 import TaskList from './TaskList';
 import AddProjectModal from './AddProjectModal';
-import { AddTaskModal } from './AddTaskModal';
-import { AddCategoryModal } from './AddCategoryModal';
+import {AddTaskModal} from './AddTaskModal';
+import {AddCategoryModal} from './AddCategoryModal';
 import { JoinProjectModal } from './JoinProjectModal';
 import AuthModal from './AuthModal';
 import ShareCodeModal from './ShareCodeModal';
 
-
 const MainContent = () => {
-  const { projects, currentProject, fetchProjects, isLoading: isProjectsLoading } = useProjectStore();
+  const { projects, currentProject, setCurrentProject, fetchProjects, isLoading: isProjectsLoading } = useProjectStore();
   const { tasks, fetchTasks, isLoading: isTasksLoading } = useTaskStore();
+  const { fetchCategories } = useCategoryStore();
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
@@ -30,8 +32,9 @@ const MainContent = () => {
   useEffect(() => {
     if (currentProject?.id) {
       fetchTasks(currentProject.id);
+      fetchCategories();
     }
-  }, [currentProject?.id, fetchTasks]);
+  }, [currentProject?.id, fetchTasks, fetchCategories]);
 
   const handleShareProject = async (projectId: number) => {
     try {
@@ -43,7 +46,11 @@ const MainContent = () => {
     }
   };
 
-  // const selectedProject = projects.find(p => p.id === currentProject?.id);
+  const handleProjectSelect = (project: Project) => {
+    setCurrentProject(project);
+    // Принудительно обновляем задачи при смене проекта
+    fetchTasks(project.id);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -91,7 +98,7 @@ const MainContent = () => {
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
                         <div
                           className="flex-grow cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 p-2 rounded-lg"
-                          onClick={() => useProjectStore.getState().setCurrentProject(project)}
+                          onClick={() => handleProjectSelect(project)}
                         >
                           <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
                             {project.name}
@@ -178,8 +185,7 @@ const MainContent = () => {
                               ))}
                             </div>
                           ) : (
-                            // <TaskList tasks={tasks.filter((item, index) => item?.id !== tasks[index+1]?.id) || []} />
-                            <TaskList tasks={tasks.filter((item, index) => item?.id !== tasks[index+1]?.id) || project.tasks || []} />
+                            <TaskList tasks={tasks.filter(task => task.projectId === currentProject.id)} />
                           )}
                         </div>
                       </div>
@@ -197,19 +203,21 @@ const MainContent = () => {
         onClose={() => setIsAddProjectModalOpen(false)}
       />
 
-      
+      {currentProject && (
+        <>
+          <AddTaskModal
+            isOpen={isAddTaskModalOpen}
+            onClose={() => setIsAddTaskModalOpen(false)}
+            projectId={currentProject.id}
+          />
 
-      <AddTaskModal
-        isOpen={isAddTaskModalOpen}
-        onClose={() => setIsAddTaskModalOpen(false)}
-        currentProject={currentProject}
-      />
-
-      <AddCategoryModal
-        isOpen={isAddCategoryModalOpen}
-        onClose={() => setIsAddCategoryModalOpen(false)}
-        currentProject={currentProject}
-      />
+          <AddCategoryModal
+            isOpen={isAddCategoryModalOpen}
+            onClose={() => setIsAddCategoryModalOpen(false)}
+            projectId={currentProject.id}
+          />
+        </>
+      )}
 
       <JoinProjectModal
         isOpen={isJoinProjectModalOpen}

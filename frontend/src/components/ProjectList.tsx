@@ -1,10 +1,18 @@
+import React from 'react';
 import { useProjectStore } from '../store/projectStore';
 import { format } from 'date-fns';
 import { ShareProjectModal } from './ShareProjectModal';
 import { useState } from 'react';
+import { Project } from '../types';
 
-const ProjectList = () => {
-  const { projects, currentProject, setCurrentProject, deleteProject } = useProjectStore();
+interface ProjectListProps {
+  projects: Project[];
+  currentProject: Project | null;
+  onProjectSelect: (project: Project) => void;
+}
+
+const ProjectList: React.FC<ProjectListProps> = ({ projects, currentProject, onProjectSelect }) => {
+  const { deleteProject } = useProjectStore();
   const [shareModalProject, setShareModalProject] = useState<number | null>(null);
 
   const handleShare = (projectId: number) => {
@@ -21,11 +29,11 @@ const ProjectList = () => {
               ? 'bg-blue-50 border-2 border-blue-500 dark:bg-blue-900'
               : 'bg-white dark:bg-gray-800'
           }`}
+          onClick={() => onProjectSelect(project)}
         >
           <div className="flex items-center justify-between">
             <div
               className="flex-grow cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 p-2 rounded-lg"
-              onClick={() => setCurrentProject(project)}
             >
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                 {project.name}
@@ -49,7 +57,10 @@ const ProjectList = () => {
             </div>
             <div className="flex space-x-2">
               <button
-                onClick={() => handleShare(project.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleShare(project.id);
+                }}
                 className="text-gray-400 hover:text-blue-500 hover:cursor-pointer transition-all duration-200"
               >
                 <svg
@@ -62,7 +73,10 @@ const ProjectList = () => {
                 </svg>
               </button>
               <button
-                onClick={() => deleteProject(project.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteProject(project.id);
+                }}
                 className="text-gray-400 hover:text-red-500 hover:cursor-pointer transition-all duration-200"
               >
                 <svg

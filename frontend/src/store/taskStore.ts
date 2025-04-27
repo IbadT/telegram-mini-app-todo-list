@@ -20,112 +20,96 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   error: null,
 
   fetchTasks: async (projectId: number) => {
+    set({ isLoading: true, error: null });
     try {
-      set({ isLoading: true, error: null });
-      const response = await api.get<Task[]>(`/projects/${projectId}/tasks`);
-      set({ tasks: response.data, isLoading: false });
-      useProjectStore.getState().updateProjectTasks(projectId, response.data);
+      const response = await api.get(`/projects/${projectId}/tasks`);
+      const tasks = response.data;
+      set({ tasks, isLoading: false });
+      const currentProject = useProjectStore.getState().currentProject;
+      if (currentProject?.id === projectId) {
+        useProjectStore.getState().updateProjectTasks(projectId, tasks);
+      }
     } catch (error) {
+      console.error('Failed to fetch tasks:', error);
       set({ error: 'Failed to fetch tasks', isLoading: false });
       throw error;
     }
   },
 
   addTask: async (projectId: number, task: CreateTaskDto) => {
+    set({ isLoading: true, error: null });
     try {
-      set({ isLoading: true, error: null });
-      const response = await api.post<Task>(`/projects/${projectId}/tasks`, task);
+      const response = await api.post(`/projects/${projectId}/tasks`, task);
       const newTask = response.data;
-      
-      // Обновляем состояние задач
-      set((state) => ({
-        tasks: [...state.tasks, newTask],
-        isLoading: false
-      }));
-      
-      // Обновляем задачи в проекте
-      const currentTasks = get().tasks;
-      useProjectStore.getState().updateProjectTasks(projectId, [...currentTasks, newTask]);
+      set((state) => {
+        const updatedTasks = [...state.tasks, newTask];
+        const currentProject = useProjectStore.getState().currentProject;
+        if (currentProject?.id === projectId) {
+          useProjectStore.getState().updateProjectTasks(projectId, updatedTasks);
+        }
+        return { tasks: updatedTasks, isLoading: false };
+      });
     } catch (error) {
+      console.error('Failed to add task:', error);
       set({ error: 'Failed to add task', isLoading: false });
       throw error;
     }
   },
 
   updateTask: async (projectId: number, taskId: number, task: UpdateTaskDto) => {
+    set({ isLoading: true, error: null });
     try {
-      set({ isLoading: true, error: null });
-      const response = await api.put<Task>(`/projects/${projectId}/tasks/${taskId}`, task);
-      const updatedTask = response.data;
-      
-      set((state) => ({
-        tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t)),
-        isLoading: false
-      }));
-      
-      const currentTasks = get().tasks;
-      useProjectStore.getState().updateProjectTasks(projectId, currentTasks);
+      const response = await api.patch(`/projects/${projectId}/tasks/${taskId}`, task);
+      set((state) => {
+        const updatedTasks = state.tasks.map((t) => (t.id === taskId ? response.data : t));
+        const currentProject = useProjectStore.getState().currentProject;
+        if (currentProject?.id === projectId) {
+          useProjectStore.getState().updateProjectTasks(projectId, updatedTasks);
+        }
+        return { tasks: updatedTasks, isLoading: false };
+      });
     } catch (error) {
+      console.error('Failed to update task:', error);
       set({ error: 'Failed to update task', isLoading: false });
       throw error;
     }
   },
 
   deleteTask: async (projectId: number, taskId: number) => {
+    set({ isLoading: true, error: null });
     try {
-      set({ isLoading: true, error: null });
       await api.delete(`/projects/${projectId}/tasks/${taskId}`);
-      
-      set((state) => ({
-        tasks: state.tasks.filter((t) => t.id !== taskId),
-        isLoading: false
-      }));
-      
-      const currentTasks = get().tasks;
-      useProjectStore.getState().updateProjectTasks(projectId, currentTasks);
+      set((state) => {
+        const updatedTasks = state.tasks.filter((t) => t.id !== taskId);
+        const currentProject = useProjectStore.getState().currentProject;
+        if (currentProject?.id === projectId) {
+          useProjectStore.getState().updateProjectTasks(projectId, updatedTasks);
+        }
+        return { tasks: updatedTasks, isLoading: false };
+      });
     } catch (error) {
+      console.error('Failed to delete task:', error);
       set({ error: 'Failed to delete task', isLoading: false });
       throw error;
     }
   },
 
   toggleTaskCompletion: async (projectId: number, taskId: number) => {
+    set({ isLoading: true, error: null });
     try {
-      const task = get().tasks.find((t) => t.id === taskId);
-      if (!task) throw new Error('Task not found');
-
-      // Оптимистичное обновление UI
-      const updatedTask = { ...task, completed: !task.completed };
-      set((state) => ({
-        tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t))
-      }));
-      
-      const currentTasks = get().tasks;
-      useProjectStore.getState().updateProjectTasks(projectId, currentTasks);
-
-      // Отправка запроса на сервер
-      const response = await api.patch<Task>(`/projects/${projectId}/tasks/${taskId}`, {
-        completed: !task.completed
+      const response = await api.patch(`/projects/${projectId}/tasks/${taskId}/toggle`);
+      set((state) => {
+        const updatedTasks = state.tasks.map((t) => (t.id === taskId ? response.data : t));
+        const currentProject = useProjectStore.getState().currentProject;
+        if (currentProject?.id === projectId) {
+          useProjectStore.getState().updateProjectTasks(projectId, updatedTasks);
+        }
+        return { tasks: updatedTasks, isLoading: false };
       });
-
-      // Обновление состояния после ответа сервера
-      set((state) => ({
-        tasks: state.tasks.map((t) => (t.id === taskId ? response.data : t))
-      }));
-      
-      const finalTasks = get().tasks;
-      useProjectStore.getState().updateProjectTasks(projectId, finalTasks);
     } catch (error) {
-      // В случае ошибки возвращаем предыдущее состояние
-      const task = get().tasks.find((t) => t.id === taskId);
-      if (task) {
-        set((state) => ({
-          tasks: state.tasks.map((t) => (t.id === taskId ? task : t))
-        }));
-        const currentTasks = get().tasks;
-        useProjectStore.getState().updateProjectTasks(projectId, currentTasks);
-      }
+      console.error('Failed to toggle task completion:', error);
+      set({ error: 'Failed to toggle task completion', isLoading: false });
       throw error;
     }
-  }
+  },
 })); 

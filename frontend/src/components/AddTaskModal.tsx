@@ -8,10 +8,10 @@ import { useCategoryStore } from '../store/categoryStore';
 interface AddTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentProject: Project | null;
+  projectId: number;
 }
 
-export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, currentProject }) => {
+export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, projectId }) => {
   const { register, handleSubmit, formState: { errors }, reset } = useForm<CreateTaskDto>();
   const { addTask } = useTaskStore();
   const { categories, fetchCategories } = useCategoryStore();
@@ -28,7 +28,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, cur
 
   const onSubmit = async (data: CreateTaskDto) => {
     try {
-      if (!currentProject?.id) {
+      if (!projectId) {
         setError('No project selected');
         return;
       }
@@ -43,7 +43,7 @@ export const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, cur
         data.categoryId = categories[0].id;
       }
 
-      await addTask(currentProject.id, data);
+      await addTask(projectId, data);
       reset();
       onClose();
     } catch (error) {

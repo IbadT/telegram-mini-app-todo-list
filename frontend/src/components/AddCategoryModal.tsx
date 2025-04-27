@@ -7,10 +7,10 @@ import { useCategoryStore } from '../store/categoryStore';
 interface AddCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentProject: Project | null;
+  projectId: number;
 }
 
-export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ isOpen, onClose, currentProject }) => {
+export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ isOpen, onClose, projectId }) => {
   const { register, handleSubmit, formState: { errors }, reset, control } = useForm<CreateCategoryDto>();
   const { addCategory, categories } = useCategoryStore();
   const [categoryError, setCategoryError] = useState<string | null>(null);
@@ -41,11 +41,11 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ isOpen, onCl
 
   const onSubmit = async (data: CreateCategoryDto) => {
     try {
-      if (!currentProject?.id) {
+      if (!projectId) {
         setCategoryError('No project selected');
         return;
       }
-      await addCategory({ ...data, projectId: currentProject.id });
+      await addCategory({ ...data, projectId });
       reset();
       onClose();
     } catch (error) {

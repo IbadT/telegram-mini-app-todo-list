@@ -8,11 +8,14 @@ export class TasksService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(userId: number, projectId: number, createTaskDto: CreateTaskDto) {
-    // Verify that the project belongs to the user
+    // Verify that the project belongs to the user or user has access through sharing
     const project = await this.prisma.project.findFirst({
       where: {
         id: projectId,
-        ownerId: userId,
+        OR: [
+          { ownerId: userId },
+          { shares: { some: { userId } } },
+        ],
       },
     });
 
@@ -45,29 +48,36 @@ export class TasksService {
   }
 
   async findAll(userId: number, projectId: number) {
-    // Verify that the project belongs to the user
+    // Verify that the project belongs to the user or user has access through sharing
     const project = await this.prisma.project.findFirst({
       where: {
         id: projectId,
-        ownerId: userId,
+        OR: [
+          { ownerId: userId },
+          { shares: { some: { userId } } },
+        ],
+      },
+      include: {
+        shares: true,
+        tasks: {
+          include: {
+            category: true
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
       },
     });
 
     if (!project) {
-      throw new NotFoundException(`Project with ID ${projectId} not found`);
+      throw new NotFoundException(`Project with ID ${projectId} not found or you don't have access to it`);
     }
 
-    return this.prisma.task.findMany({
-      where: {
-        projectId,
-      },
-      include: {
-        category: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    console.log({ project });
+    
+
+    return project.tasks;
   }
 
   async findOne(userId: number, projectId: number, id: number) {
@@ -76,7 +86,10 @@ export class TasksService {
         id,
         projectId,
         project: {
-          ownerId: userId,
+          OR: [
+            { ownerId: userId },
+            { shares: { some: { userId } } },
+          ],
         },
       },
       include: {

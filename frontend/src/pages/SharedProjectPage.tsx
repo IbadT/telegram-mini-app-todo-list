@@ -199,7 +199,7 @@ const SharedProjectPage = () => {
       <AddTaskModal
         isOpen={isAddTaskModalOpen}
         onClose={() => setIsAddTaskModalOpen(false)}
-        currentProject={project}
+        projectId={project?.id}
       />
     </div>
   );

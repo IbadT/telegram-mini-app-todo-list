@@ -111,7 +111,17 @@ export class ProjectsService {
   async joinProject(shareCode: string, userId: number) {
     const project = await this.prisma.project.findUnique({
       where: { shareCode },
-      include: { shares: true },
+      include: { 
+        shares: true,
+        tasks: {
+          include: {
+            category: true
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
+      },
     });
     if (!project) throw new Error('Project not found');
     if (project.ownerId === userId) throw new Error('You are the owner of this project');
@@ -121,7 +131,14 @@ export class ProjectsService {
       data: { projectId: project.id, userId },
     });
 
-    return { message: 'Successfully joined the project', projectId: project.id };
+    return { 
+      message: 'Successfully joined the project', 
+      projectId: project.id,
+      project: {
+        ...project,
+        tasks: project.tasks
+      }
+    };
   }
 
   async getProjectByShareCode(code: string) {

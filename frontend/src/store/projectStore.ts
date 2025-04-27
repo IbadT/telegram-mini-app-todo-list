@@ -26,19 +26,62 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
   fetchProjects: async () => {
     const user = useAuthStore.getState().user;
-    console.log({ user });
-    
     if (!user?.id) return;
 
     set({ isLoading: true, error: null });
     try {
-      // const response = await api.get(`/users/${user.id}/projects`);
-      // const response = await api.get(`/projects/${user.id}`);
       const response = await api.get(`/projects`);
-      console.log({ response });
+      const projects = response.data;
       
-      set({ projects: response.data, isLoading: false });
+      // Загружаем задачи для каждого проекта
+      const projectsWithTasks = await Promise.all(
+        projects.map(async (project: Project) => {
+          try {
+            // Проверяем, есть ли у пользователя доступ к проекту
+            const hasAccess = project.ownerId === user.id || 
+                            project.shares?.some(share => share.userId === user.id);
+            
+            if (!hasAccess) {
+              return { 
+                ...project, 
+                tasks: [],
+                ownerId: project.ownerId,
+                shares: project.shares || []
+              };
+            }
+
+            const tasksResponse = await api.get(`/projects/${project.id}/tasks`);
+            return { 
+              ...project, 
+              tasks: tasksResponse.data,
+              ownerId: project.ownerId,
+              shares: project.shares || []
+            };
+          } catch (error) {
+            console.error(`Failed to fetch tasks for project ${project.id}:`, error);
+            return { 
+              ...project, 
+              tasks: [],
+              ownerId: project.ownerId,
+              shares: project.shares || []
+            };
+          }
+        })
+      );
+      
+      // Обновляем текущий проект, если он существует в обновленном списке
+      const currentProject = get().currentProject;
+      if (currentProject) {
+        const updatedCurrentProject = projectsWithTasks.find(p => p.id === currentProject.id);
+        if (updatedCurrentProject) {
+          set({ projects: projectsWithTasks, currentProject: updatedCurrentProject, isLoading: false });
+          return;
+        }
+      }
+      
+      set({ projects: projectsWithTasks, isLoading: false });
     } catch (error) {
+      console.error('Failed to fetch projects:', error);
       set({ error: 'Failed to fetch projects', isLoading: false });
       throw error;
     }
@@ -46,8 +89,6 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
 
   addProject: async (project: CreateProjectDto) => {
     const user = useAuthStore.getState().user;
-    console.log({ user });
-    
     if (!user) throw new Error('User not authenticated');
 
     set({ isLoading: true, error: null });
@@ -61,6 +102,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
+      console.error('Failed to add project:', error);
       set({ error: 'Failed to add project', isLoading: false });
       throw error;
     }
@@ -79,6 +121,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
+      console.error('Failed to update project:', error);
       set({ error: 'Failed to update project', isLoading: false });
       throw error;
     }
@@ -97,6 +140,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
+      console.error('Failed to delete project:', error);
       set({ error: 'Failed to delete project', isLoading: false });
       throw error;
     }
@@ -107,25 +151,57 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
   },
 
   updateProjectTasks: (projectId: number, tasks: Task[]) => {
-    set((state) => ({
-      projects: state.projects.map((p) =>
+    set((state) => {
+      const updatedProjects = state.projects.map((p) =>
         p.id === projectId ? { ...p, tasks } : p
-      ),
-      currentProject:
-        state.currentProject?.id === projectId
-          ? { ...state.currentProject, tasks }
-          : state.currentProject,
-    }));
+      );
+      
+      const updatedCurrentProject = state.currentProject?.id === projectId
+        ? { ...state.currentProject, tasks }
+        : state.currentProject;
+
+      return {
+        projects: updatedProjects,
+        currentProject: updatedCurrentProject,
+      };
+    });
   },
 
   shareProject: async (projectId: number) => {
-    const response = await api.post<{ shareCode: string }>(`/projects/${projectId}/share`);
-    return response.data.shareCode;
+    try {
+      const response = await api.post<{ shareCode: string }>(`/projects/${projectId}/share`);
+      return response.data.shareCode;
+    } catch (error) {
+      console.error('Failed to share project:', error);
+      throw error;
+    }
   },
 
   joinProject: async (shareCode: string) => {
-    const response = await api.post<{ message: string; projectId: number }>(`/projects/join/${shareCode}`);
-    await get().fetchProjects();
-    return response.data;
+    try {
+      const response = await api.post<{ 
+        message: string; 
+        projectId: number;
+        project: Project;
+      }>(`/projects/join/${shareCode}`);
+      
+      // После успешного присоединения к проекту, обновляем список проектов
+      await get().fetchProjects();
+      
+      // Устанавливаем присоединенный проект как текущий
+      if (response.data.project) {
+        set({ currentProject: response.data.project });
+      } else {
+        const newProject = get().projects.find(p => p.id === response.data.projectId);
+        if (newProject) {
+          set({ currentProject: newProject });
+        }
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Failed to join project:', error);
+      throw error;
+    }
   },
 })); 
