@@ -178,7 +178,8 @@ const MainContent = () => {
                               ))}
                             </div>
                           ) : (
-                            <TaskList tasks={tasks.filter((item, index) => item?.id !== tasks[index+1]?.id) || []} />
+                            // <TaskList tasks={tasks.filter((item, index) => item?.id !== tasks[index+1]?.id) || []} />
+                            <TaskList tasks={tasks.filter((item, index) => item?.id !== tasks[index+1]?.id) || project.tasks} />
                           )}
                         </div>
                       </div>
