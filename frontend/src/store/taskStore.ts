@@ -34,13 +34,18 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   addTask: async (projectId: number, task: CreateTaskDto) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await api.post<Task>(`/projects/${projectId}/tasks`, task); 
-      console.log({ response });
+      const response = await api.post<Task>(`/projects/${projectId}/tasks`, task);
+      const newTask = response.data;
+      
+      // Обновляем состояние задач
       set((state) => ({
-        tasks: [...state.tasks, response.data],
+        tasks: [...state.tasks, newTask],
         isLoading: false
       }));
-      useProjectStore.getState().updateProjectTasks(projectId, [...get().tasks, response.data]);
+      
+      // Обновляем задачи в проекте
+      const currentTasks = get().tasks;
+      useProjectStore.getState().updateProjectTasks(projectId, [...currentTasks, newTask]);
     } catch (error) {
       set({ error: 'Failed to add task', isLoading: false });
       throw error;
@@ -51,11 +56,15 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       const response = await api.put<Task>(`/projects/${projectId}/tasks/${taskId}`, task);
+      const updatedTask = response.data;
+      
       set((state) => ({
-        tasks: state.tasks.map((t) => (t.id === taskId ? response.data : t)),
+        tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t)),
         isLoading: false
       }));
-      useProjectStore.getState().updateProjectTasks(projectId, get().tasks.map((t) => (t.id === taskId ? response.data : t)));
+      
+      const currentTasks = get().tasks;
+      useProjectStore.getState().updateProjectTasks(projectId, currentTasks);
     } catch (error) {
       set({ error: 'Failed to update task', isLoading: false });
       throw error;
@@ -66,11 +75,14 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       await api.delete(`/projects/${projectId}/tasks/${taskId}`);
+      
       set((state) => ({
         tasks: state.tasks.filter((t) => t.id !== taskId),
         isLoading: false
       }));
-      useProjectStore.getState().updateProjectTasks(projectId, get().tasks.filter((t) => t.id !== taskId));
+      
+      const currentTasks = get().tasks;
+      useProjectStore.getState().updateProjectTasks(projectId, currentTasks);
     } catch (error) {
       set({ error: 'Failed to delete task', isLoading: false });
       throw error;
@@ -87,7 +99,9 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       set((state) => ({
         tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t))
       }));
-      useProjectStore.getState().updateProjectTasks(projectId, get().tasks.map((t) => (t.id === taskId ? updatedTask : t)));
+      
+      const currentTasks = get().tasks;
+      useProjectStore.getState().updateProjectTasks(projectId, currentTasks);
 
       // Отправка запроса на сервер
       const response = await api.patch<Task>(`/projects/${projectId}/tasks/${taskId}`, {
@@ -98,7 +112,9 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
       set((state) => ({
         tasks: state.tasks.map((t) => (t.id === taskId ? response.data : t))
       }));
-      useProjectStore.getState().updateProjectTasks(projectId, get().tasks.map((t) => (t.id === taskId ? response.data : t)));
+      
+      const finalTasks = get().tasks;
+      useProjectStore.getState().updateProjectTasks(projectId, finalTasks);
     } catch (error) {
       // В случае ошибки возвращаем предыдущее состояние
       const task = get().tasks.find((t) => t.id === taskId);
@@ -106,7 +122,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
         set((state) => ({
           tasks: state.tasks.map((t) => (t.id === taskId ? task : t))
         }));
-        useProjectStore.getState().updateProjectTasks(projectId, get().tasks.map((t) => (t.id === taskId ? task : t)));
+        const currentTasks = get().tasks;
+        useProjectStore.getState().updateProjectTasks(projectId, currentTasks);
       }
       throw error;
     }
