@@ -29,6 +29,7 @@ export const useTaskStore = create<TaskStore>((set, _) => ({
       if (currentProject?.id === projectId) {
         useProjectStore.getState().updateProjectTasks(projectId, tasks);
       }
+      return tasks;
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
       set({ error: 'Failed to fetch tasks', isLoading: false });
@@ -95,21 +96,32 @@ export const useTaskStore = create<TaskStore>((set, _) => ({
   },
 
   toggleTaskCompletion: async (projectId: number, taskId: number) => {
-    set({ isLoading: true, error: null });
+    console.log('Store: Toggling task completion', { projectId, taskId });
     try {
       const response = await api.patch(`/projects/${projectId}/tasks/${taskId}/toggle`);
-      set((state) => {
-        const updatedTasks = state.tasks.map((t) => (t.id === taskId ? response.data : t));
-        const currentProject = useProjectStore.getState().currentProject;
-        if (currentProject?.id === projectId) {
-          useProjectStore.getState().updateProjectTasks(projectId, updatedTasks);
-        }
-        return { tasks: updatedTasks, isLoading: false };
+      console.log('Store: Server response:', response.data);
+      const updatedTask = response.data;
+      
+      set(state => {
+        const newTasks = state.tasks.map(task => 
+          task.id === taskId ? updatedTask : task
+        );
+        console.log('Store: New tasks state:', newTasks);
+        return { tasks: newTasks };
       });
+      
+      const currentProject = useProjectStore.getState().currentProject;
+      if (currentProject?.id === projectId) {
+        const updatedTasks = useTaskStore.getState().tasks;
+        console.log('Store: Updating project tasks:', updatedTasks);
+        useProjectStore.getState().updateProjectTasks(projectId, updatedTasks);
+      }
+      
+      return updatedTask;
     } catch (error) {
-      console.error('Failed to toggle task completion:', error);
-      set({ error: 'Failed to toggle task completion', isLoading: false });
+      console.error('Store: Failed to toggle task completion:', error);
       throw error;
     }
   },
+
 })); 

@@ -2,22 +2,35 @@ import { Task } from '../types';
 import { format } from 'date-fns';
 import { useTaskStore } from '../store/taskStore';
 import { useProjectStore } from '../store/projectStore';
+import { useState, useEffect } from 'react';
 
 interface TaskListProps {
   tasks: Task[];
 }
 
-const TaskList = ({ tasks }: TaskListProps) => {
-  console.log({ tasks });
-  
+const TaskList = ({ tasks: initialTasks }: TaskListProps) => {
+  const [tasks, setTasks] = useState(initialTasks);
   const { toggleTaskCompletion, deleteTask } = useTaskStore();
   const { currentProject } = useProjectStore();
 
+  // Обновляем локальное состояние при изменении initialTasks
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
+
   const handleTaskToggle = async (taskId: number) => {
     if (!currentProject) return;
-    await toggleTaskCompletion(currentProject.id, taskId);
-    const { fetchTasks } = useTaskStore.getState();
-    await fetchTasks(currentProject.id);
+    
+    try {
+      const updatedTask = await toggleTaskCompletion(currentProject.id, taskId);
+      setTasks(prevTasks => 
+        prevTasks.map(task => 
+          task.id === taskId ? updatedTask : task
+        ) as Task[]
+      );
+    } catch (error) {
+      console.error('Failed to toggle task:', error);
+    }
   };
 
   const getPriorityColor = (priority: string) => {

@@ -92,4 +92,18 @@ export class TasksController {
     const userId = req.user?.id;
     return this.tasksService.remove(userId, +projectId, +id);
   }
+
+  @Patch(':id/toggle')
+  @ApiOperation({ summary: 'Toggle task completion status' })
+  @ApiResponse({ status: 200, description: 'Task status toggled successfully.' })
+  @ApiResponse({ status: 404, description: 'Task not found.' })
+  toggle(
+    @Param('projectId') projectId: string,
+    @Param('id') id: string,
+    @Req() req: Request,
+  ) {
+    // @ts-ignore
+    const userId = req.user?.id;
+    return this.tasksService.toggle(userId, +projectId, +id);
+  }
 } 

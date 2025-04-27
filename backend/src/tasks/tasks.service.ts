@@ -127,4 +127,20 @@ export class TasksService {
       },
     });
   }
+
+  async toggle(userId: number, projectId: number, id: number) {
+    const task = await this.findOne(userId, projectId, id);
+    
+    return this.prisma.task.update({
+      where: {
+        id,
+      },
+      data: {
+        completed: !task.completed,
+      },
+      include: {
+        category: true,
+      },
+    });
+  }
 } 
