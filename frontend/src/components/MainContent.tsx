@@ -178,8 +178,7 @@ const MainContent = () => {
                               ))}
                             </div>
                           ) : (
-                            // <TaskList tasks={tasks || []} />
-                            <TaskList tasks={project.tasks || []} />
+                            <TaskList tasks={tasks} />
                           )}
                         </div>
                       </div>
