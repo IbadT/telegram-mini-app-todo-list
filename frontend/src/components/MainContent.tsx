@@ -208,6 +208,7 @@ const MainContent = () => {
       <AddCategoryModal
         isOpen={isAddCategoryModalOpen}
         onClose={() => setIsAddCategoryModalOpen(false)}
+        currentProject={currentProject}
       />
 
       <JoinProjectModal

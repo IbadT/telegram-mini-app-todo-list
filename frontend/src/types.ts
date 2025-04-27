@@ -83,4 +83,5 @@ export interface ProjectShare {
 export interface CreateCategoryDto {
   name: string;
   color: string;
+  projectId: number;
 } 

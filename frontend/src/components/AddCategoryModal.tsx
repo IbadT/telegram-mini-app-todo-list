@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { useForm, useWatch } from 'react-hook-form';
-import { CreateCategoryDto } from '../types';
+import { CreateCategoryDto, Project } from '../types';
 import { useCategoryStore } from '../store/categoryStore';
 
 interface AddCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
+  currentProject: Project | null;
 }
 
-export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ isOpen, onClose }) => {
+export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ isOpen, onClose, currentProject }) => {
   const { register, handleSubmit, formState: { errors }, reset, control } = useForm<CreateCategoryDto>();
   const { addCategory, categories } = useCategoryStore();
   const [categoryError, setCategoryError] = useState<string | null>(null);
@@ -40,7 +41,11 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ isOpen, onCl
 
   const onSubmit = async (data: CreateCategoryDto) => {
     try {
-      await addCategory(data);
+      if (!currentProject?.id) {
+        setCategoryError('No project selected');
+        return;
+      }
+      await addCategory({ ...data, projectId: currentProject.id });
       reset();
       onClose();
     } catch (error) {
