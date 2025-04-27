@@ -149,7 +149,7 @@ const MainContent = () => {
                       <div className="mt-4 ml-0 sm:ml-4">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
                           <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-                            Tasks
+                            Задачи
                           </h2>
                           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                             <button

@@ -11,8 +11,8 @@ if (!initData && isTelegramWebApp) {
 }
 
 const instance = axios.create({
-  baseURL: 'https://telegram-mini-app-todo-list.onrender.com/api',
-  // baseURL: 'http://localhost:3000/api',
+  // baseURL: 'https://telegram-mini-app-todo-list.onrender.com/api',
+  baseURL: 'http://localhost:3000/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
