@@ -16,6 +16,8 @@ const TaskList = ({ tasks }: TaskListProps) => {
   const handleTaskToggle = async (taskId: number) => {
     if (!currentProject) return;
     await toggleTaskCompletion(currentProject.id, taskId);
+    const { fetchTasks } = useTaskStore.getState();
+    await fetchTasks(currentProject.id);
   };
 
   const getPriorityColor = (priority: string) => {
