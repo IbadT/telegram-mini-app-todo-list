@@ -8,6 +8,8 @@ interface TaskListProps {
 }
 
 const TaskList = ({ tasks }: TaskListProps) => {
+  console.log({ tasks });
+  
   const { toggleTaskCompletion, deleteTask } = useTaskStore();
   const { currentProject } = useProjectStore();
 
@@ -77,9 +79,9 @@ const TaskList = ({ tasks }: TaskListProps) => {
                   )}
                   <span
                     className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                    style={{ backgroundColor: task.category.color + '20', color: task.category.color }}
+                    style={{ backgroundColor: task.category?.color + '20', color: task.category?.color }}
                   >
-                    {task.category.name}
+                    {task.category?.name}
                   </span>
                 </div>
               </div>
